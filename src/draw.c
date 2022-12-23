@@ -1,8 +1,6 @@
 
 #include <stdio.h>
 
-#include <allegro.h>
-
 #include "draw.h"
 
 #include "blocks.h"
@@ -31,8 +29,8 @@ void draw_grid_to_screen_coords(
 }
 
 void draw_city(
-   BITMAP* buffer, int view_x, int view_y,
-   char* map, int map_w, int map_h, BITMAP** blocks
+   int view_x, int view_y,
+   char* map, int map_w, int map_h, struct RETROFLAT_BITMAP* blocks
 ) {
    int x = -1,
       y = 2,
@@ -50,7 +48,7 @@ void draw_city(
 
          block_id = ((int)map[(y * map_w) + x]) / 50;
 
-         draw_sprite( buffer, blocks[block_id], px_x, px_y );
+         retroflat_blit_bitmap( NULL, &(blocks[block_id]), px_x, px_y );
       }
    }
 }

@@ -1,7 +1,8 @@
 
 #include "gridcity.h"
 
-#include <allegro.h>
+#define RETROFLT_C
+#include <retroflt.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,29 +16,7 @@
 #define GRIDCITY_MAP_W 17
 #define GRIDCITY_MAP_H 17
 
-#define ERROR_ALLEGRO 1
-#define ERROR_ALLEGRO_GFX 2
-#define ERROR_ALLEGRO_MOUSE 4
-#define ERROR_ALLOC 8
-#define ERROR_BITMAP 0xf
-
-BITMAP* load_block_bitmap( const char* filename ) {
-   BITMAP* bmp_out = NULL;
-   char filename_path[PATH_MAX + 1];
-
-   /* Build the path to the bitmap. */
-   memset( filename_path, '\0', PATH_MAX + 1 );
-   snprintf(
-      filename_path, PATH_MAX, "%s%c%s.%s",
-      PATH_BLOCKS, PATH_SEP, filename, BLOCK_EXT );
-
-   printf( "%s\n", filename_path );
-
-   /* Load and adjust the bitmap. */
-   bmp_out = load_bmp( filename_path, NULL );
-
-   return bmp_out;
-}
+#define ERROR_ALLOC 0x100
 
 void gridcity_dump_terrain( char* map, int map_w, int map_h ) {
    int x = 0,
@@ -68,53 +47,30 @@ int main( int argc, char* argv[] ) {
    char* gridcity_map = NULL;
    int retval = 0,
       i = 0,
-      key_val = 0,
       view_x = 0,
       view_y = 100;
-   BITMAP** blocks = NULL;
-   BITMAP* buffer = NULL;
+   struct RETROFLAT_BITMAP* blocks = NULL;
+   struct RETROFLAT_INPUT input_evt;
 
    /* === Setup === */
 
    srand( time( NULL ) );
 
-   if( allegro_init() ) {
-      allegro_message( "could not setup allegro!" );
-      retval = ERROR_ALLEGRO;
-      goto cleanup;
-   }
+   retval = retroflat_init( 320, 240 );
 
-   install_keyboard();
-
-#ifdef DOS
-   if( set_gfx_mode( GFX_AUTODETECT, 320, 200, 0, 0 ) ) {
-#else
-   if( set_gfx_mode( GFX_AUTODETECT_WINDOWED, 320, 240, 0, 0 ) ) {
-#endif
-      allegro_message( "could not setup graphics!" );
-      retval = ERROR_ALLEGRO_GFX;
-      goto cleanup;
-   }
+   retroflat_set_assets_path( "blocks" );
 
    /* === Allocation and Loading === */
 
-   buffer = create_bitmap( SCREEN_W, SCREEN_H );
-   if( NULL == buffer ) {
-      allegro_message( "unable to allocate screen buffer!" );
-      goto cleanup;
-   }
-
-   blocks = calloc( sizeof( BITMAP* ), BLOCK_MAX );
+   blocks = calloc( sizeof( struct RETROFLAT_BITMAP ), BLOCK_MAX );
    if( NULL == blocks ) {
       allegro_message( "unable to allocate blocks!" );
       retval = ERROR_ALLOC;
       goto cleanup;
    }
    for( i = 0 ; BLOCK_MAX > i ; i++ ) {
-      blocks[i] = load_block_bitmap( gc_block_filenames[i] );
-      if( NULL == blocks[i] ) {
-         allegro_message( "unable to load bitmap: %s", gc_block_filenames[i] );
-         retval = ERROR_BITMAP;
+      retval = retroflat_load_bitmap( gc_block_filenames[i], &(blocks[i]) );
+      if( RETROFLAT_ERROR_BITMAP == retval ) {
          goto cleanup;
       }
    }
@@ -136,37 +92,29 @@ int main( int argc, char* argv[] ) {
 
    while( running ) {
 
-      if( keypressed() ) {
-         key_val = readkey();
-         switch( (key_val >> 8) ) {
-         case KEY_Q:
-            running = 0;
-            break;
-         }
+      switch( retroflat_poll_input( &input_evt ) ) {
+      case KEY_Q:
+         running = 0;
+         break;
       }
 
-      acquire_screen();
-      clear_to_color( buffer, makecol( 128, 128, 128 ) );
+      retroflat_draw_lock();
+      retroflat_rect(
+         NULL, RETROFLAT_COLOR_GRAY, 0, 0, SCREEN_W, SCREEN_H,
+         RETROFLAT_FLAGS_FILL );
 
-      draw_city( buffer, view_x, view_y, gridcity_map,
+      draw_city( view_x, view_y, gridcity_map,
          GRIDCITY_MAP_W, GRIDCITY_MAP_H, blocks );
 
-      blit( buffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H );
-
-      release_screen();
-      vsync();
+      retroflat_draw_flip();
    }
 
 cleanup:
-   
-   if( ERROR_ALLEGRO != retval ) {
-      clear_keybuf();
-   }
 
    if( NULL != blocks ) {
       for( i = 0 ; BLOCK_MAX > i ; i++ ) {
-         if( NULL != blocks[i] ) {
-            destroy_bitmap( blocks[i] );
+         if( retroflat_bitmap_ok( &(blocks[i]) ) ) {
+            retroflat_destroy_bitmap( &(blocks[i]) );
          }
       }
       free( blocks );
@@ -176,9 +124,7 @@ cleanup:
       free( gridcity_map );
    }
 
-   if( NULL != buffer ) {
-      destroy_bitmap( buffer );
-   }
+   retroflat_shutdown( retval );
 
    return retval;
 }
