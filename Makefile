@@ -10,7 +10,7 @@ CFLAGS_GCC :=
 SANITIZE := -Werror -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
 
 gridcity: CC_GCC := gcc
-gridcity: CFLAGS_GCC := $(shell pkg-config allegro --cflags) $(SANITIZE)
+gridcity: CFLAGS_GCC := $(shell pkg-config allegro --cflags) $(SANITIZE) -DRETROFLAT_ALLEGRO -DRETROFLAT_MOUSE -DRETROFLAT_OS_UNIX -Imaug/src
 gridcity: LDFLAGS_GCC := $(shell pkg-config allegro --libs) $(SANITIZE)
 
 .PHONY: clean
