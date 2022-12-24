@@ -48,7 +48,9 @@ void draw_city(
 
          block_id = ((int)map[(y * map_w) + x]) / 50;
 
-         retroflat_blit_bitmap( NULL, &(blocks[block_id]), px_x, px_y );
+         retroflat_blit_bitmap(
+            NULL, &(blocks[block_id]), 0, 0, px_x, px_y,
+            BLOCK_PX_W, BLOCK_PX_H );
       }
    }
 }
