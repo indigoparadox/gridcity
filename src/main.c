@@ -18,6 +18,13 @@
 
 #define ERROR_ALLOC 0x100
 
+struct GRIDCITY_DATA {
+   char* map;
+   struct RETROFLAT_BITMAP* blocks;
+   int view_x;
+   int view_y;
+};
+
 void gridcity_dump_terrain( char* map, int map_w, int map_h ) {
    int x = 0,
       y = 0;
@@ -42,86 +49,89 @@ void gridcity_dump_terrain( char* map, int map_w, int map_h ) {
    printf( "\n" );
 }
 
-int main( int argc, char* argv[] ) {
-   unsigned char running = 1;
-   char* gridcity_map = NULL;
-   int retval = 0,
-      i = 0,
-      view_x = 0,
-      view_y = 100;
-   struct RETROFLAT_BITMAP* blocks = NULL;
+void gridcity_loop( struct GRIDCITY_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
+
+   switch( retroflat_poll_input( &input_evt ) ) {
+   case RETROFLAT_KEY_Q:
+      retroflat_quit( 0 );
+      break;
+   }
+
+   retroflat_draw_lock();
+
+   retroflat_rect(
+      NULL, RETROFLAT_COLOR_GRAY, 0, 0, SCREEN_W, SCREEN_H,
+      RETROFLAT_FLAGS_FILL );
+
+   draw_city( data->view_x, data->view_y, data->map,
+      GRIDCITY_MAP_W, GRIDCITY_MAP_H, data->blocks );
+
+   retroflat_draw_flip();
+}
+
+int main( int argc, char* argv[] ) {
+   struct GRIDCITY_DATA data;
+   int retval = 0,
+      i = 0;
 
    /* === Setup === */
 
    srand( time( NULL ) );
 
-   retval = retroflat_init( 320, 240 );
+   retval = retroflat_init( "GridCity", 320, 240 );
 
    retroflat_set_assets_path( "blocks" );
 
    /* === Allocation and Loading === */
 
-   blocks = calloc( sizeof( struct RETROFLAT_BITMAP ), BLOCK_MAX );
-   if( NULL == blocks ) {
-      allegro_message( "unable to allocate blocks!" );
+   memset( &data, '\0', sizeof( struct GRIDCITY_DATA ) );
+   data.view_y = 100;
+
+   data.blocks = calloc( sizeof( struct RETROFLAT_BITMAP ), BLOCK_MAX );
+   if( NULL == data.blocks ) {
+      retroflat_message( "GridCity Error", "Unable to allocate blocks!" );
       retval = ERROR_ALLOC;
       goto cleanup;
    }
    for( i = 0 ; BLOCK_MAX > i ; i++ ) {
-      retval = retroflat_load_bitmap( gc_block_filenames[i], &(blocks[i]) );
+      retval = retroflat_load_bitmap(
+         gc_block_filenames[i], &(data.blocks[i]) );
       if( RETROFLAT_ERROR_BITMAP == retval ) {
          goto cleanup;
       }
    }
 
-   gridcity_map = calloc( GRIDCITY_MAP_W * GRIDCITY_MAP_H, 1 );
-   if( NULL == gridcity_map ) {
-      allegro_message( "unable to allocate map!" );
+   data.map = calloc( GRIDCITY_MAP_W * GRIDCITY_MAP_H, 1 );
+   if( NULL == data.map ) {
+      retroflat_message( "GridCity Error", "Unable to allocate map!" );
       retval = ERROR_ALLOC;
       goto cleanup;
    }
-   memset( gridcity_map, -1, GRIDCITY_MAP_W * GRIDCITY_MAP_H );
+   memset( data.map, -1, GRIDCITY_MAP_W * GRIDCITY_MAP_H );
 
    gridcity_generate_terrain(
-      gridcity_map, 100, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+      data.map, 100, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
 
-   gridcity_dump_terrain( gridcity_map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+   gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
 
    /* === Main Loop === */
 
-   while( running ) {
-
-      switch( retroflat_poll_input( &input_evt ) ) {
-      case KEY_Q:
-         running = 0;
-         break;
-      }
-
-      retroflat_draw_lock();
-      retroflat_rect(
-         NULL, RETROFLAT_COLOR_GRAY, 0, 0, SCREEN_W, SCREEN_H,
-         RETROFLAT_FLAGS_FILL );
-
-      draw_city( view_x, view_y, gridcity_map,
-         GRIDCITY_MAP_W, GRIDCITY_MAP_H, blocks );
-
-      retroflat_draw_flip();
-   }
+   retroflat_loop( gridcity_loop, &data );
 
 cleanup:
 
-   if( NULL != blocks ) {
+   if( NULL != data.blocks ) {
       for( i = 0 ; BLOCK_MAX > i ; i++ ) {
-         if( retroflat_bitmap_ok( &(blocks[i]) ) ) {
-            retroflat_destroy_bitmap( &(blocks[i]) );
+         if( retroflat_bitmap_ok( &(data.blocks[i]) ) ) {
+            retroflat_destroy_bitmap( &(data.blocks[i]) );
          }
       }
-      free( blocks );
+      free( data.blocks );
    }
 
-   if( NULL != gridcity_map ) {
-      free( gridcity_map );
+   if( NULL != data.map ) {
+      free( data.map );
    }
 
    retroflat_shutdown( retval );
