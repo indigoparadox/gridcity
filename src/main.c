@@ -58,7 +58,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       break;
    }
 
-   retroflat_draw_lock();
+   retroflat_draw_lock( NULL );
 
    retroflat_rect(
       NULL, RETROFLAT_COLOR_GRAY, 0, 0, SCREEN_W, SCREEN_H,
@@ -67,11 +67,12 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
    draw_city( data->view_x, data->view_y, data->map,
       GRIDCITY_MAP_W, GRIDCITY_MAP_H, data->blocks );
 
-   retroflat_draw_flip();
+   retroflat_draw_release( NULL );
 }
 
 int main( int argc, char* argv[] ) {
    struct GRIDCITY_DATA data;
+   struct RETROFLAT_ARGS args;
    int retval = 0,
       i = 0;
 
@@ -79,9 +80,12 @@ int main( int argc, char* argv[] ) {
 
    srand( time( NULL ) );
 
-   retval = retroflat_init( "GridCity", 320, 240 );
+   args.title = "GridCity";
+   args.screen_w = 320;
+   args.screen_h = 200;
+   args.assets_path = "blocks";
 
-   retroflat_set_assets_path( "blocks" );
+   retval = retroflat_init( argc, argv, &args );
 
    /* === Allocation and Loading === */
 
@@ -117,7 +121,7 @@ int main( int argc, char* argv[] ) {
 
    /* === Main Loop === */
 
-   retroflat_loop( gridcity_loop, &data );
+   retroflat_loop( (retroflat_loop_iter)gridcity_loop, &data );
 
 cleanup:
 
