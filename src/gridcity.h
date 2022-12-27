@@ -8,9 +8,9 @@
    gridcity_generate_terrain_iter( \
       map, max_z, map_w, map_h, 0, 0, map_w - 1, map_h - 1 );
 
-void gridcity_dump_terrain( char* map, int map_w, int map_h );
+void gridcity_dump_terrain( signed char* map, int map_w, int map_h );
 void gridcity_generate_terrain_iter(
-   char* map, int max_z, int map_w, int map_h,
+   signed char* map, int max_z, int map_w, int map_h,
    int sect_x, int sect_y, int sect_w, int sect_h );
 
 /*

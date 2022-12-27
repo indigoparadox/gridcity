@@ -19,13 +19,13 @@
 #define ERROR_ALLOC 0x100
 
 struct GRIDCITY_DATA {
-   char* map;
+   signed char* map;
    struct RETROFLAT_BITMAP* blocks;
    int view_x;
    int view_y;
 };
 
-void gridcity_dump_terrain( char* map, int map_w, int map_h ) {
+void gridcity_dump_terrain( signed char* map, int map_w, int map_h ) {
    int x = 0,
       y = 0;
 
@@ -61,11 +61,14 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
    retroflat_draw_lock( NULL );
 
    retroflat_rect(
-      NULL, RETROFLAT_COLOR_GRAY, 0, 0, SCREEN_W, SCREEN_H,
+      NULL, RETROFLAT_COLOR_GRAY, 0, 0,
+      retroflat_screen_w(), retroflat_screen_h(),
       RETROFLAT_FLAGS_FILL );
 
    draw_city( data->view_x, data->view_y, data->map,
       GRIDCITY_MAP_W, GRIDCITY_MAP_H, data->blocks );
+
+   retroflat_string( NULL, "Test", 4, 10, 10, RETROFLAT_COLOR_RED, 0 );
 
    retroflat_draw_release( NULL );
 }
