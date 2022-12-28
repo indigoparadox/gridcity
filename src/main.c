@@ -68,8 +68,6 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
    draw_city( data->view_x, data->view_y, data->map,
       GRIDCITY_MAP_W, GRIDCITY_MAP_H, data->blocks );
 
-   retroflat_string( NULL, "Test", 4, 10, 10, RETROFLAT_COLOR_RED, 0 );
-
    retroflat_draw_release( NULL );
 }
 
@@ -117,10 +115,26 @@ int main( int argc, char* argv[] ) {
    }
    memset( data.map, -1, GRIDCITY_MAP_W * GRIDCITY_MAP_H );
 
+   /* Show "Generating Terrain..." */
+
+   retroflat_draw_lock( NULL );
+
+   retroflat_rect(
+      NULL, RETROFLAT_COLOR_BLACK, 0, 0,
+      retroflat_screen_w(), retroflat_screen_h(),
+      RETROFLAT_FLAGS_FILL );
+
+   retroflat_string(
+      NULL, RETROFLAT_COLOR_RED, "Generating Terrain", 19, NULL, 10, 10, 0 );
+
    gridcity_generate_terrain(
       data.map, 100, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
 
+   retroflat_draw_release( NULL );
+
+   /*
    gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+   */
 
    /* === Main Loop === */
 
