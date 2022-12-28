@@ -4,24 +4,28 @@
 GRIDCITY_C_FILES := src/main.c src/gridcity.c src/draw.c
 
 MD := mkdir -p
+CC_GCC := gcc
 
-CFLAGS_GCC :=
-
+CFLAGS_GCC := -Imaug/src
 CFLAGS_WATCOM := -imaug/src
 
 ifneq ("$(BUILD)","RELEASE")
+	CFLAGS_GCC += -Werror -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
+	LDFLAGS_GCC += -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
 	CFLAGS_WATCOM += -d3 -we
 endif
 
-SANITIZE := -Werror -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
-
-gridcity: CC_GCC := gcc
-gridcity: CFLAGS_GCC := $(shell pkg-config allegro --cflags) $(SANITIZE) -DRETROFLAT_API_ALLEGRO -DRETROFLAT_OS_UNIX -Imaug/src
-gridcity: LDFLAGS_GCC := $(shell pkg-config allegro --libs) $(SANITIZE)
+ifeq ("$(API)","SDL")
+	CFLAGS_GCC += $(shell pkg-config sdl2 --cflags) -DRETROFLAT_API_SDL
+	LDFLAGS_GCC += $(shell pkg-config sdl2 --libs) -lSDL_ttf
+else
+	CFLAGS_GCC += $(shell pkg-config allegro --cflags) -DRETROFLAT_API_ALLEGRO
+	LDFLAGS_GCC += $(shell pkg-config allegro --libs)
+endif
 
 .PHONY: clean
 
-all: gridcity
+all: gridcity gridctyw.exe gridctyd.exe
 
 # Unix
 
@@ -30,7 +34,7 @@ gridcity: $(addprefix obj/$(shell uname -s)/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
 
 obj/$(shell uname -s)/%.o: %.c
 	$(MD) $(dir $@)
-	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC)
+	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX
 
 # Win386
 
