@@ -17,7 +17,7 @@
 #define BLOCK_EXT "bmp"
 
 #define BLOCK_PX_W 16
-#define BLOCK_PX_H 16
+#define BLOCK_PX_H 64
 #define BLOCK_PX_OFFSET 8
 
 #define BLOCK_MAX_Z 100
