@@ -30,12 +30,14 @@ void draw_grid_to_screen_coords(
 
 void draw_city(
    int view_x, int view_y,
-   signed char* map, int map_w, int map_h, struct RETROFLAT_BITMAP* blocks
+   signed char* map, signed char* buildings,
+   int map_w, int map_h, struct RETROFLAT_BITMAP* blocks
 ) {
    int x = -1,
       y = 2,
       px_x = 0,
       px_y = 0,
+      block_z = 0,
       block_id = 0;
 
    for( y = 0 ; map_h > y ; y++ ) {
@@ -46,10 +48,24 @@ void draw_city(
          /* TODO: Optimize drawing off-screen out. */
          draw_grid_to_screen_coords( &px_x, &px_y, x, y, view_x, view_y );
 
-         block_id = ((int)map[(y * map_w) + x]) / 50;
+         block_z = block_get_z( x, y, map, map_w );
+
+         if( BLOCK_Z_WATER >= block_z ) {
+            block_id = 0;
+         } else {
+            if( 0 == buildings[(y * map_w) + x] ) {
+               block_id = 1;
+            } else {
+               block_id = buildings[(y * map_w) + x];
+            }
+         }
 
          retroflat_blit_bitmap(
-            NULL, &(blocks[block_id]), 0, 0, px_x, px_y,
+            NULL,
+            &(blocks[block_id]),
+            0, 0,
+            px_x,
+            BLOCK_Z_WATER >= block_z ? px_y - BLOCK_Z_WATER : px_y - block_z,
             BLOCK_PX_W, BLOCK_PX_H );
       }
    }

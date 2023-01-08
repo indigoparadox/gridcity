@@ -20,6 +20,7 @@
 
 struct GRIDCITY_DATA {
    signed char* map;
+   signed char* buildings;
    struct RETROFLAT_BITMAP* blocks;
    int view_x;
    int view_y;
@@ -52,11 +53,17 @@ void gridcity_dump_terrain( signed char* map, int map_w, int map_h ) {
 void gridcity_loop( struct GRIDCITY_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
 
+   /* === Check Input === */
+
    switch( retroflat_poll_input( &input_evt ) ) {
    case RETROFLAT_KEY_Q:
       retroflat_quit( 0 );
       break;
    }
+
+   /* === Simulate === */
+
+   /* === Draw === */
 
    retroflat_draw_lock( NULL );
 
@@ -65,7 +72,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       retroflat_screen_w(), retroflat_screen_h(),
       RETROFLAT_FLAGS_FILL );
 
-   draw_city( data->view_x, data->view_y, data->map,
+   draw_city( data->view_x, data->view_y, data->map, data->buildings,
       GRIDCITY_MAP_W, GRIDCITY_MAP_H, data->blocks );
 
    retroflat_draw_release( NULL );
@@ -74,8 +81,11 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 int main( int argc, char* argv[] ) {
    struct GRIDCITY_DATA data;
    struct RETROFLAT_ARGS args;
+   int gridcity_start_x = -1;
+   int gridcity_start_y = -1;
    int retval = 0,
-      i = 0;
+      i = 0,
+      block_z = 0;
 
    /* === Setup === */
 
@@ -115,6 +125,13 @@ int main( int argc, char* argv[] ) {
    }
    memset( data.map, -1, GRIDCITY_MAP_W * GRIDCITY_MAP_H );
 
+   data.buildings = calloc( GRIDCITY_MAP_W * GRIDCITY_MAP_H, 1 );
+   if( NULL == data.buildings ) {
+      retroflat_message( "GridCity Error", "Unable to allocate buildings!" );
+      retval = ERROR_ALLOC;
+      goto cleanup;
+   }
+
    /* Show "Generating Terrain..." */
 
    retroflat_draw_lock( NULL );
@@ -127,10 +144,32 @@ int main( int argc, char* argv[] ) {
    retroflat_string(
       NULL, RETROFLAT_COLOR_RED, "Generating Terrain", 19, NULL, 10, 10, 0 );
 
-   gridcity_generate_terrain(
-      data.map, 100, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
-
    retroflat_draw_release( NULL );
+
+   /* Generate terrain. */
+   gridcity_generate_terrain(
+      data.map, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+
+   /* Pick random starting plot. */
+   while(
+      (0 > gridcity_start_x && 0 > gridcity_start_y) ||
+      2 > data.buildings[gridcity_idx(
+         gridcity_start_x, gridcity_start_y, GRIDCITY_MAP_W)]
+   ) {
+      gridcity_start_x = rand() % GRIDCITY_MAP_W;
+      gridcity_start_y = rand() % GRIDCITY_MAP_H;
+
+      block_z = block_get_z(
+            gridcity_start_x, gridcity_start_y, data.map, GRIDCITY_MAP_W );
+
+      if( BLOCK_Z_WATER < block_z ) {
+         printf( "starting at %d, %d (z: %d)\n",
+            gridcity_start_x, gridcity_start_y, block_z );
+         data.buildings[gridcity_idx( gridcity_start_x, gridcity_start_y,
+            GRIDCITY_MAP_W )] = 2;
+      }
+   }
+   gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
 
    /*
    gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
