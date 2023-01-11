@@ -10,7 +10,7 @@
 
 #define PATH_BLOCKS "blocks"
 
-#define BLOCK_LIST( f ) f( 0, "water" ) f( 1, "grass" ) f( 2, "house" ) f( 3, "warehouse" )
+#define BLOCK_LIST( f ) f( 0, "water" ) f( 1, "grass" ) f( 2, "house" ) f( 3, "wrhouse" )
 
 #define BLOCK_MAX 4
 
