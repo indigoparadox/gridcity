@@ -24,6 +24,7 @@ struct GRIDCITY_DATA {
    struct RETROFLAT_BITMAP* blocks;
    int view_x;
    int view_y;
+   int next_ms;
 };
 
 void gridcity_dump_terrain( signed char* map, int map_w, int map_h ) {
@@ -62,6 +63,11 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
    }
 
    /* === Simulate === */
+
+   if( data->next_ms < retroflat_get_ms() ) {
+      /* Timer has expired! */
+      data->next_ms = retroflat_get_ms() + 2000;
+   }
 
    /* === Draw === */
 
