@@ -6,8 +6,8 @@ GRIDCITY_C_FILES := src/main.c src/gridcity.c src/draw.c
 MD := mkdir -p
 CC_GCC := gcc
 
-CFLAGS_GCC := -Imaug/src
-CFLAGS_WATCOM := -imaug/src
+CFLAGS_GCC := -Imaug/src -DDEBUG_LOG
+CFLAGS_WATCOM := -imaug/src -DDEBUG_LOG
 
 ifneq ("$(BUILD)","RELEASE")
 	CFLAGS_GCC += -Werror -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
