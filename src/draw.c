@@ -50,6 +50,9 @@ void draw_city(
 
          block_z = block_get_z( x, y, map, map_w );
 
+         /* If the block is water, it's 0, if it's grass, it's 1, otherwise it's
+          * a building.
+          */
          if( BLOCK_Z_WATER >= block_z ) {
             block_id = 0;
          } else {

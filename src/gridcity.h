@@ -12,6 +12,8 @@ void gridcity_dump_terrain( signed char* map, int map_w, int map_h );
 void gridcity_generate_terrain_iter(
    signed char* map, int max_z, int map_w, int map_h,
    int sect_x, int sect_y, int sect_w, int sect_h );
+void gridcity_grow(
+   signed char* map, signed char* buildings, int map_w, int map_h );
 
 /*
 void gridcity_generate_terrain( char* map, int max_z, int map_w, int map_h );
