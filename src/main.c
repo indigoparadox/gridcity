@@ -161,8 +161,8 @@ int main( int argc, char* argv[] ) {
    retroflat_draw_release( NULL );
 
    /* Generate terrain. */
-   retrogam_generate_terrain(
-      data.map, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+   retrogam_generate_diamond_square(
+      data.map, 0, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
 
    /* Pick random starting plot. */
    while(
