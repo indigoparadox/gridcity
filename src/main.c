@@ -4,6 +4,9 @@
 #define RETROFLT_C
 #include <retroflt.h>
 
+#define RETROGAM_C
+#include <retrogam.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -158,7 +161,7 @@ int main( int argc, char* argv[] ) {
    retroflat_draw_release( NULL );
 
    /* Generate terrain. */
-   gridcity_generate_terrain(
+   retrogam_generate_terrain(
       data.map, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
 
    /* Pick random starting plot. */
