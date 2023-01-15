@@ -65,6 +65,11 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
    /* === Simulate === */
 
    if( data->next_ms < retroflat_get_ms() ) {
+
+      gridcity_grow( data->map, data->buildings,
+         GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+         /* data->map_w, data->map_h ); */
+
       /* Timer has expired! */
       data->next_ms = retroflat_get_ms() + 2000;
    }
