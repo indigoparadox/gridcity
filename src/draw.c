@@ -38,7 +38,8 @@ void draw_city(
       px_x = 0,
       px_y = 0,
       block_z = 0,
-      block_id = 0;
+      block_id = 0,
+      offset_y = 100;
 
    for( y = 0 ; map_h > y ; y++ ) {
 
@@ -68,7 +69,9 @@ void draw_city(
             &(blocks[block_id]),
             0, 0,
             px_x,
-            BLOCK_Z_WATER >= block_z ? px_y - BLOCK_Z_WATER : px_y - block_z,
+            offset_y +
+               (BLOCK_Z_WATER >= block_z ?
+                  px_y - BLOCK_Z_WATER : px_y - block_z),
             BLOCK_PX_W, BLOCK_PX_H );
       }
    }
