@@ -16,8 +16,8 @@
 #include "blocks.h"
 #include "draw.h"
 
-#define GRIDCITY_MAP_W 17
-#define GRIDCITY_MAP_H 17
+#define GRIDCITY_MAP_W 40
+#define GRIDCITY_MAP_H 40
 
 #define ERROR_ALLOC 0x100
 
@@ -60,7 +60,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
    /* === Check Input === */
 
    switch( retroflat_poll_input( &input_evt ) ) {
-   case RETROFLAT_KEY_Q:
+   case RETROFLAT_KEY_ESC:
       retroflat_quit( 0 );
       break;
    }
@@ -106,8 +106,8 @@ int main( int argc, char* argv[] ) {
    srand( time( NULL ) );
 
    args.title = "GridCity";
-   args.screen_w = 320;
-   args.screen_h = 200;
+   args.screen_w = 640;
+   args.screen_h = 480;
    args.assets_path = "blocks";
 
    retval = retroflat_init( argc, argv, &args );
@@ -163,6 +163,8 @@ int main( int argc, char* argv[] ) {
    /* Generate terrain. */
    retrogam_generate_diamond_square(
       data.map, 0, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+
+   gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
 
    /* Pick random starting plot. */
    while(

@@ -6,13 +6,15 @@ GRIDCITY_C_FILES := src/main.c src/gridcity.c src/draw.c
 MD := mkdir -p
 CC_GCC := gcc
 
-CFLAGS_GCC := -Imaug/src -DDEBUG_LOG
-CFLAGS_WATCOM := -imaug/src -DDEBUG_LOG
+DEFINES_GLOBAL =
+
+CFLAGS_GCC := -Imaug/src $(DEFINES_GLOBAL)
+CFLAGS_WATCOM := -imaug/src $(DEFINES_GLOBAL)
 
 ifneq ("$(BUILD)","RELEASE")
-	CFLAGS_GCC += -Werror -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
+	CFLAGS_GCC += -Werror -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined -DDEBUG -DDEBUG_LOG -DDEBUG_THRESHOLD=1
 	LDFLAGS_GCC += -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
-	CFLAGS_WATCOM += -d3 -we
+	CFLAGS_WATCOM += -d3 -we -DDEBUG -DDEBUG_LOG -DDEBUG_THRESHOLD=1
 endif
 
 ifeq ("$(API)","SDL")
