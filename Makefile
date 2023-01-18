@@ -6,7 +6,7 @@ GRIDCITY_C_FILES := src/main.c src/gridcity.c src/draw.c
 MD := mkdir -p
 CC_GCC := gcc
 
-DEFINES_GLOBAL =
+DEFINES_GLOBAL = -DLOG_TO_FILE -DLOG_FILE_NAME=\"out.log\"
 
 CFLAGS_GCC := -Imaug/src $(DEFINES_GLOBAL)
 CFLAGS_WATCOM := -imaug/src $(DEFINES_GLOBAL)
@@ -27,7 +27,7 @@ endif
 
 .PHONY: clean
 
-all: gridcity gridctyw.exe gridctyd.exe
+all: gridcity gridctyw.exe gridctyd.exe gridctnt.exe
 
 # Unix
 
@@ -64,10 +64,15 @@ obj/dos/%.o: %.c
 
 # Windows NT
 
+gridctnt.exe: $(addprefix obj/win32/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
+	wcl386 -l=nt_win -fe=$@ $^
+
 obj/win32/%.o: %.c
 	$(MD) $(dir $@)
-	wcc386 -bt=nt_win -fo=$@ $(<:%.c=%)
+	wcc386 -DRETROFLAT_SCREENSAVER \
+		-DRETROFLAT_OS_WIN -DRETROFLAT_API_WIN32 $(CFLAGS_WATCOM) \
+		-i=$(WATCOM)/h/nt -bt=nt -fo=$@ $(<:%.c=%)
 
 clean:
-	rm -rf obj gridcity gridctyd.exe *.err *.rex gridctyw.exe
+	rm -rf obj gridcity gridctyd.exe *.err *.rex gridctyw.exe gridctnt.exe
 

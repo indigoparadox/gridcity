@@ -1,6 +1,9 @@
 
 #include "gridcity.h"
 
+#define UPRINTF_C
+#include <uprintf.h>
+
 #define RETROFLT_C
 #include <retroflt.h>
 
@@ -56,6 +59,56 @@ void gridcity_dump_terrain( signed char* map, int map_w, int map_h ) {
 
 void gridcity_loop( struct GRIDCITY_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
+   static int init = 0;
+   int gridcity_start_x = -1;
+   int gridcity_start_y = -1;
+   int block_z = 0;
+
+   if( !init ) {
+      /* Show "Generating Terrain..." */
+
+      retroflat_draw_lock( NULL );
+
+      retroflat_rect(
+         NULL, RETROFLAT_COLOR_BLACK, 0, 0,
+         retroflat_screen_w(), retroflat_screen_h(),
+         RETROFLAT_FLAGS_FILL );
+
+      retroflat_string(
+         NULL, RETROFLAT_COLOR_RED,
+         "Generating Terrain", 19, NULL, 10, 10, 0 );
+
+      retroflat_draw_release( NULL );
+
+      /* Generate terrain. */
+      retrogam_generate_diamond_square(
+         data->map, 0, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+
+      gridcity_dump_terrain( data->map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+
+      /* Pick random starting plot. */
+      while(
+         (0 > gridcity_start_x && 0 > gridcity_start_y) ||
+         2 > data->buildings[gridcity_idx(
+            gridcity_start_x, gridcity_start_y, GRIDCITY_MAP_W)]
+      ) {
+         gridcity_start_x = rand() % GRIDCITY_MAP_W;
+         gridcity_start_y = rand() % GRIDCITY_MAP_H;
+
+         block_z = block_get_z(
+               gridcity_start_x, gridcity_start_y, data->map, GRIDCITY_MAP_W );
+
+         if( BLOCK_Z_WATER < block_z ) {
+            debug_printf( 1, "starting at %d, %d (z: %d)",
+               gridcity_start_x, gridcity_start_y, block_z );
+            data->buildings[gridcity_idx( gridcity_start_x, gridcity_start_y,
+               GRIDCITY_MAP_W )] = 2;
+         }
+      }
+      gridcity_dump_terrain( data->map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+
+      init = 1;
+   }
 
    /* === Check Input === */
 
@@ -95,13 +148,14 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 int main( int argc, char* argv[] ) {
    struct GRIDCITY_DATA data;
    struct RETROFLAT_ARGS args;
-   int gridcity_start_x = -1;
-   int gridcity_start_y = -1;
    int retval = 0,
-      i = 0,
-      block_z = 0;
+      i = 0;
 
    /* === Setup === */
+
+   logging_init();
+
+   debug_printf( 1, "test" );
 
    srand( time( NULL ) );
 
@@ -146,51 +200,6 @@ int main( int argc, char* argv[] ) {
       goto cleanup;
    }
 
-   /* Show "Generating Terrain..." */
-
-   retroflat_draw_lock( NULL );
-
-   retroflat_rect(
-      NULL, RETROFLAT_COLOR_BLACK, 0, 0,
-      retroflat_screen_w(), retroflat_screen_h(),
-      RETROFLAT_FLAGS_FILL );
-
-   retroflat_string(
-      NULL, RETROFLAT_COLOR_RED, "Generating Terrain", 19, NULL, 10, 10, 0 );
-
-   retroflat_draw_release( NULL );
-
-   /* Generate terrain. */
-   retrogam_generate_diamond_square(
-      data.map, 0, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
-
-   gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
-
-   /* Pick random starting plot. */
-   while(
-      (0 > gridcity_start_x && 0 > gridcity_start_y) ||
-      2 > data.buildings[gridcity_idx(
-         gridcity_start_x, gridcity_start_y, GRIDCITY_MAP_W)]
-   ) {
-      gridcity_start_x = rand() % GRIDCITY_MAP_W;
-      gridcity_start_y = rand() % GRIDCITY_MAP_H;
-
-      block_z = block_get_z(
-            gridcity_start_x, gridcity_start_y, data.map, GRIDCITY_MAP_W );
-
-      if( BLOCK_Z_WATER < block_z ) {
-         printf( "starting at %d, %d (z: %d)\n",
-            gridcity_start_x, gridcity_start_y, block_z );
-         data.buildings[gridcity_idx( gridcity_start_x, gridcity_start_y,
-            GRIDCITY_MAP_W )] = 2;
-      }
-   }
-   gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
-
-   /*
-   gridcity_dump_terrain( data.map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
-   */
-
    /* === Main Loop === */
 
    retroflat_loop( (retroflat_loop_iter)gridcity_loop, &data );
@@ -211,6 +220,8 @@ cleanup:
    }
 
    retroflat_shutdown( retval );
+
+   logging_shutdown();
 
    return retval;
 }
