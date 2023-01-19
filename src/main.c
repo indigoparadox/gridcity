@@ -1,8 +1,11 @@
 
 #include "gridcity.h"
 
-#define UPRINTF_C
-#include <uprintf.h>
+#define MAUG_C
+#include <maug.h>
+
+#define MARGE_C
+#include <marge.h>
 
 #define RETROFLT_C
 #include <retroflt.h>
@@ -164,11 +167,15 @@ int main( int argc, char* argv[] ) {
    args.screen_h = 480;
    args.assets_path = "blocks";
 
+   memset( &data, '\0', sizeof( struct GRIDCITY_DATA ) );
+
    retval = retroflat_init( argc, argv, &args );
+   if( MERROR_OK != retval ) {
+      goto cleanup;
+   }
 
    /* === Allocation and Loading === */
 
-   memset( &data, '\0', sizeof( struct GRIDCITY_DATA ) );
    data.view_y = 100;
 
    data.blocks = calloc( sizeof( struct RETROFLAT_BITMAP ), BLOCK_MAX );
