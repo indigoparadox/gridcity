@@ -17,26 +17,29 @@ ifneq ("$(BUILD)","RELEASE")
 	CFLAGS_WATCOM += -d3 -we -DDEBUG -DDEBUG_LOG -DDEBUG_THRESHOLD=1
 endif
 
-ifeq ("$(API)","SDL")
-	CFLAGS_GCC += $(shell pkg-config sdl2 --cflags) -DRETROFLAT_API_SDL
-	LDFLAGS_GCC += $(shell pkg-config sdl2 --libs) -lSDL_ttf
-else
-	CFLAGS_GCC += $(shell pkg-config allegro --cflags) -DRETROFLAT_API_ALLEGRO
-	LDFLAGS_GCC += $(shell pkg-config allegro --libs)
-endif
-
 .PHONY: clean
 
-all: gridcity gridctyw.exe gridctyd.exe gridctnt.exe
+all: gridcity.ale gridcity.sdl gridctyw.exe gridctyd.exe gridctnt.exe
 
-# Unix
+# Unix.Allegro
 
-gridcity: $(addprefix obj/$(shell uname -s)/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
-	$(CC_GCC) -o $@ $^ $(LDFLAGS_GCC)
+gridcity.ale: $(addprefix obj/$(shell uname -s)-allegro/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
+	$(CC_GCC) -o $@ $^ $(LDFLAGS_GCC) $(shell pkg-config allegro --libs)
 
-obj/$(shell uname -s)/%.o: %.c
+obj/$(shell uname -s)-allegro/%.o: %.c
 	$(MD) $(dir $@)
-	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX
+	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX \
+		$(shell pkg-config allegro --cflags) -DRETROFLAT_API_ALLEGRO
+
+# Unix.SDL
+
+gridcity.sdl: $(addprefix obj/$(shell uname -s)-sdl/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
+	$(CC_GCC) -o $@ $^ $(LDFLAGS_GCC) $(shell pkg-config sdl2 --libs) -lSDL_ttf
+
+obj/$(shell uname -s)-sdl/%.o: %.c
+	$(MD) $(dir $@)
+	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX \
+		$(shell pkg-config sdl2 --cflags) -DRETROFLAT_API_SDL2
 
 # Win386
 
