@@ -10,16 +10,17 @@ DEFINES_GLOBAL = -DLOG_TO_FILE -DLOG_FILE_NAME=\"out.log\"
 
 CFLAGS_GCC := -Imaug/src $(DEFINES_GLOBAL)
 CFLAGS_WATCOM := -imaug/src $(DEFINES_GLOBAL)
+LDFLAGS_GCC := -lm
 
 ifneq ("$(BUILD)","RELEASE")
-	CFLAGS_GCC += -Werror -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined -DDEBUG -DDEBUG_LOG -DDEBUG_THRESHOLD=1
+	CFLAGS_GCC += -Wall -g -fsanitize=address -fsanitize=leak -fsanitize=undefined -DDEBUG -DDEBUG_LOG -DDEBUG_THRESHOLD=1
 	LDFLAGS_GCC += -g -fsanitize=address -fsanitize=leak -fsanitize=undefined
 	CFLAGS_WATCOM += -d3 -we -DDEBUG -DDEBUG_LOG -DDEBUG_THRESHOLD=1
 endif
 
 .PHONY: clean
 
-all: gridcity.ale gridcity.sdl gridctyw.exe gridctyd.exe gridctnt.exe
+all: gridcity.ale gridcity.sdl gridctyw.exe gridctyd.exe gridctnt.exe gridcity.html
 
 # Unix.Allegro
 
@@ -40,6 +41,15 @@ obj/$(shell uname -s)-sdl/%.o: %.c
 	$(MD) $(dir $@)
 	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX \
 		$(shell pkg-config sdl2 --cflags) -DRETROFLAT_API_SDL2
+
+# WASM
+
+gridcity.html: $(addprefix obj/wasm/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
+	emcc -o $@ $^ -s USE_SDL=2 -s USE_SDL_TTF=2
+
+obj/wasm/%.o: %.c
+	$(MD) $(dir $@)
+	emcc -c -o $@ $< -DRETROFLAT_OS_WASM -DRETROFLAT_API_SDL2 -s USE_SDL=2 -Imaug/src -s USE_SDL_TTF=2
 
 # Win386
 
