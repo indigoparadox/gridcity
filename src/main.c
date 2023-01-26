@@ -213,6 +213,8 @@ int main( int argc, char* argv[] ) {
 
 cleanup:
 
+#ifndef RETROFLAT_OS_WASM
+
    if( NULL != data.blocks ) {
       for( i = 0 ; BLOCK_MAX > i ; i++ ) {
          if( retroflat_bitmap_ok( &(data.blocks[i]) ) ) {
@@ -229,6 +231,8 @@ cleanup:
    retroflat_shutdown( retval );
 
    logging_shutdown();
+
+#endif /* !RETROFLAT_OS_WASM */
 
    return retval;
 }
