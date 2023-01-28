@@ -1,6 +1,8 @@
 
 # vim: ft=make noexpandtab
 
+include maug/Makexpm.inc
+
 GRIDCITY_C_FILES := src/main.c src/gridcity.c src/draw.c
 
 MD := mkdir -p
@@ -18,38 +20,48 @@ ifneq ("$(BUILD)","RELEASE")
 	CFLAGS_WATCOM += -d3 -we -DDEBUG -DDEBUG_LOG -DDEBUG_THRESHOLD=1
 endif
 
+ifeq ("$(SDL_VER)","1")
+	CFLAGS_SDL_GCC=$(shell pkg-config sdl --cflags) -DRETROFLAT_API_SDL1
+	LDFLAGS_SDL_GCC=$(shell pkg-config sdl --libs) -lSDL_ttf
+else
+	CFLAGS_SDL_GCC=$(shell pkg-config sdl2 --cflags) -DRETROFLAT_API_SDL2
+	LDFLAGS_SDL_GCC=$(shell pkg-config sdl2 --libs) -lSDL_ttf
+endif
+
 .PHONY: clean
 
 all: gridcity.ale gridcity.sdl gridctyw.exe gridctyd.exe gridctnt.exe gridcity.html
+
+$(eval $(call DIRTOXPMS,blocks,src))
 
 # Unix.Allegro
 
 gridcity.ale: $(addprefix obj/$(shell uname -s)-allegro/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
 	$(CC_GCC) -o $@ $^ $(LDFLAGS_GCC) $(shell pkg-config allegro --libs)
 
-obj/$(shell uname -s)-allegro/%.o: %.c
+obj/$(shell uname -s)-allegro/%.o: %.c | src/blocks_xpm.h
 	$(MD) $(dir $@)
 	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX \
-		$(shell pkg-config allegro --cflags) -DRETROFLAT_API_ALLEGRO
+		$(shell pkg-config allegro --cflags) -DRETROFLAT_API_ALLEGRO -DBLOCKS_XPM
 
 # Unix.SDL
 
 gridcity.sdl: $(addprefix obj/$(shell uname -s)-sdl/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
-	$(CC_GCC) -o $@ $^ $(LDFLAGS_GCC) $(shell pkg-config sdl2 --libs) -lSDL_ttf
+	$(CC_GCC) -o $@ $^ $(LDFLAGS_GCC) $(LDFLAGS_SDL_GCC)
 
-obj/$(shell uname -s)-sdl/%.o: %.c
+obj/$(shell uname -s)-sdl/%.o: %.c | src/blocks_xpm.h
 	$(MD) $(dir $@)
-	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX \
-		$(shell pkg-config sdl2 --cflags) -DRETROFLAT_API_SDL2
+	$(CC_GCC) -c -o $@ $< $(CFLAGS_GCC) -DRETROFLAT_OS_UNIX $(CFLAGS_SDL_GCC) \
+		-BLOCKS_XPM
 
 # WASM
 
 gridcity.html: $(addprefix obj/wasm/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
 	emcc -o $@ $^ -s USE_SDL=2 -s USE_SDL_TTF=2
 
-obj/wasm/%.o: %.c
+obj/wasm/%.o: %.c | src/blocks_xpm.h
 	$(MD) $(dir $@)
-	emcc -c -o $@ $< -DRETROFLAT_OS_WASM -DRETROFLAT_API_SDL2 -s USE_SDL=2 -Imaug/src -s USE_SDL_TTF=2
+	emcc -c -o $@ $< -DRETROFLAT_OS_WASM -DRETROFLAT_API_SDL2 -s USE_SDL=2 -Imaug/src -s USE_SDL_TTF=2 -DBLOCKS_XPM
 
 # Win386
 
@@ -59,33 +71,33 @@ gridctyw.rex: $(addprefix obj/win16/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
 gridctyw.exe: gridctyw.rex
 	wbind $< -s $(WATCOM)/binw/win386.ext -R $@
 
-obj/win16/%.o: %.c
+obj/win16/%.o: %.c | src/blocks_xpm.h
 	$(MD) $(dir $@)
 	wcc386 -DRETROFLAT_OS_WIN -DRETROFLAT_API_WIN16 $(CFLAGS_WATCOM) \
-		-i=$(WATCOM)/h/win -bt=windows -fo=$@ $(<:%.c=%)
+		-i=$(WATCOM)/h/win -bt=windows -fo=$@ $(<:%.c=%) -DBLOCKS_XPM
 
 # DOS
 
 gridctyd.exe: $(addprefix obj/dos/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
 	wcl386 -l=dos32a -fe=$@ -s -3s -k128k dos/clib3s.lib alleg.lib $^
 
-obj/dos/%.o: %.c
+obj/dos/%.o: %.c | src/blocks_xpm.h
 	$(MD) $(dir $@)
 	#$(CC_GCC) $(CFLAGS_GCC) -c -o $@ $<
 	wcc386 -DRETROFLAT_OS_DOS -DRETROFLAT_API_ALLEGRO $(CFLAGS_WATCOM) \
-		-bt=dos32a -s -3s -fo=$@ $(<:%.c=%)
+		-bt=dos32a -s -3s -fo=$@ $(<:%.c=%) -DBLOCKS_XPM
 
 # Windows NT
 
 gridctnt.exe: $(addprefix obj/win32/,$(subst .c,.o,$(GRIDCITY_C_FILES)))
 	wcl386 -l=nt_win -fe=$@ $^
 
-obj/win32/%.o: %.c
+obj/win32/%.o: %.c | src/blocks_xpm.h
 	$(MD) $(dir $@)
 	wcc386 -DRETROFLAT_SCREENSAVER \
 		-DRETROFLAT_OS_WIN -DRETROFLAT_API_WIN32 $(CFLAGS_WATCOM) \
-		-i=$(WATCOM)/h/nt -bt=nt -fo=$@ $(<:%.c=%)
+		-i=$(WATCOM)/h/nt -bt=nt -fo=$@ $(<:%.c=%) -DBLOCKS_XPM
 
 clean:
-	rm -rf obj gridcity gridctyd.exe *.err *.rex gridctyw.exe gridctnt.exe
+	rm -rf obj gridcity gridctyd.exe *.err *.rex gridctyw.exe gridctnt.exe gridcity.html gridcity.js gridcity.wasm
 
