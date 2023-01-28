@@ -99,5 +99,5 @@ obj/win32/%.o: %.c | src/blocks_xpm.h
 		-i=$(WATCOM)/h/nt -bt=nt -fo=$@ $(<:%.c=%) -DBLOCKS_XPM
 
 clean:
-	rm -rf obj gridcity gridctyd.exe *.err *.rex gridctyw.exe gridctnt.exe gridcity.html gridcity.js gridcity.wasm
+	rm -rf obj gridctyd.exe *.err *.rex gridctyw.exe gridctnt.exe gridcity.html gridcity.js gridcity.wasm gridcity.ale gridcity.sdl
 
