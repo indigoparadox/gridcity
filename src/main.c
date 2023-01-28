@@ -1,4 +1,8 @@
 
+#ifdef BLOCKS_XPM
+#include "blocks_xpm.h"
+#endif /* BLOCKS_XPM */
+
 #include "gridcity.h"
 
 #define MAUG_C
