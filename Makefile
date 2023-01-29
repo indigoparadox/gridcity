@@ -1,6 +1,7 @@
 
 # vim: ft=make noexpandtab
 
+SCREENSAVER=1
 C_FILES := src/main.c src/gridcity.c src/draw.c
 
 include maug/Makefile.inc
