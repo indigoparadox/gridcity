@@ -1,3 +1,9 @@
 *.exe
 *.rex
+*.html
+*.js
+*.wasm
+*.sdl
+*.ale
 obj
+src/blocks_xpm.h
