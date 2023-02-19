@@ -4,9 +4,9 @@
 SCREENSAVER=1
 C_FILES := src/main.c src/gridcity.c src/draw.c
 
-include maug/Makefile.inc
+DEFINES_GCC += -DBLOCKS_XPM
 
-CFLAGS_GCC += -DBLOCKS_XPM
+include maug/Makefile.inc
 
 .PHONY: clean
 
