@@ -166,6 +166,8 @@ int main( int argc, char* argv[] ) {
 
    srand( time( NULL ) );
 
+   memset( &args, 0, sizeof( struct RETROFLAT_ARGS ) );
+
    args.title = "GridCity";
    args.screen_w = 640;
    args.screen_h = 480;
