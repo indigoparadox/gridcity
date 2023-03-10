@@ -1,6 +1,8 @@
 
 #include <stdio.h>
 
+#include <maug.h>
+
 #include "draw.h"
 
 #include "blocks.h"
