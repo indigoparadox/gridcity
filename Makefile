@@ -3,7 +3,6 @@
 
 SCREENSAVER=1
 C_FILES := src/main.c src/gridcity.c src/draw.c
-WING=1
 
 DEFINES_GCC += -DBLOCKS_XPM
 
@@ -34,6 +33,9 @@ $(eval $(call TGTWASMSDL,grdcty))
 $(eval $(call TGTWINICO,grdcty))
 
 $(eval $(call TGTWIN386,grdcty))
+
+# TODO: Until WinG works with Win386...
+WING=1
 
 $(eval $(call TGTWIN16,grdcty))
 
