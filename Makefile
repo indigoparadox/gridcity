@@ -2,7 +2,7 @@
 # vim: ft=make noexpandtab
 
 SCREENSAVER=1
-C_FILES := src/main.c src/gridcity.c src/draw.c
+C_FILES := src/main.c src/gridcity.c src/draw.c src/gridgen.c
 
 DEFINES_GCC += -DBLOCKS_XPM
 

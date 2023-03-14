@@ -12,10 +12,5 @@ void draw_grid_to_screen_coords(
    int* screen_px_x, int* screen_px_y, int grid_px_x, int grid_px_y,
    int view_x, int view_y );
 
-void draw_city(
-   int view_x, int view_y,
-   signed char* map, signed char* buildings,
-   int map_w, int map_h, struct RETROFLAT_BITMAP* blocks );
-
 #endif /* !DRAW_H */
 

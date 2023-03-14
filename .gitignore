@@ -5,5 +5,9 @@
 *.wasm
 *.sdl
 *.ale
+*.dll
+*.log
+*Dbg
+Debug*
 obj
 src/blocks_xpm.h
