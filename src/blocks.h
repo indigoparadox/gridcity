@@ -24,9 +24,6 @@
 #define BLOCK_Z_DIVISOR 5
 #define BLOCK_Z_WATER 8
 
-#define block_get_z( x, y, map, map_w ) \
-   (((map[((y) * (map_w)) + (x)])) / BLOCK_Z_DIVISOR)
-
 #define block_get_id( b )
 
 #define BLOCK_LIST_FILENAMES( idx, filename ) filename,

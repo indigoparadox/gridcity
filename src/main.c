@@ -3,8 +3,6 @@
 #include "blocks_xpm.h"
 #endif /* BLOCKS_XPM */
 
-#include "gridcity.h"
-
 #define MAUG_C
 #include <maug.h>
 
@@ -14,62 +12,22 @@
 #define RETROFLT_C
 #include <retroflt.h>
 
-#define RETROGAM_C
-#include <retrogam.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 
+#include "gridcity.h"
 #define BLOCKS_C
 #include "blocks.h"
 #include "draw.h"
-
-#define GRIDCITY_MAP_W 40
-#define GRIDCITY_MAP_H 40
+#include "gridgen.h"
 
 #define ERROR_ALLOC 0x100
-
-struct GRIDCITY_DATA {
-   signed char* map;
-   signed char* buildings;
-   struct RETROFLAT_BITMAP* blocks;
-   int view_x;
-   int view_y;
-   int next_ms;
-};
-
-void gridcity_dump_terrain( signed char* map, int map_w, int map_h ) {
-   int x = 0,
-      y = 0;
-
-   printf( "\n" );
-   printf( "      " );
-   for( x = 0 ; map_w > x ; x++ ) {
-      printf( "%03d ", x );
-   }
-   printf( "\n" );
-   for( x = -2 ; map_h > x ; x++ ) {
-      printf( "----" );
-   }
-   printf( "\n" );
-   for( y = 0 ; map_h > y ; y++ ) {
-      printf( "%03d | ", y );
-      for( x = 0 ; map_h > x ; x++ ) {
-         printf( "%03d ", map[(y * map_w) + x] );
-      }
-      printf( "\n" );
-   }
-   printf( "\n" );
-}
 
 void gridcity_loop( struct GRIDCITY_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    static int init = 0;
-   int gridcity_start_x = -1;
-   int gridcity_start_y = -1;
-   int block_z = 0;
 
    if( !init ) {
       /* Show "Generating Terrain..." */
@@ -88,31 +46,12 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       retroflat_draw_release( NULL );
 
       /* Generate terrain. */
-      retrogam_generate_diamond_square(
-         data->map, 0, BLOCK_MAX_Z, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
-
-      gridcity_dump_terrain( data->map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+      gridgen_generate_diamond_square( &(data->city), 0, BLOCK_MAX_Z );
 
       /* Pick random starting plot. */
-      while(
-         (0 > gridcity_start_x && 0 > gridcity_start_y) ||
-         2 > data->buildings[gridcity_idx(
-            gridcity_start_x, gridcity_start_y, GRIDCITY_MAP_W)]
-      ) {
-         gridcity_start_x = rand() % GRIDCITY_MAP_W;
-         gridcity_start_y = rand() % GRIDCITY_MAP_H;
+      gridcity_build_seed( &(data->city) );
 
-         block_z = block_get_z(
-               gridcity_start_x, gridcity_start_y, data->map, GRIDCITY_MAP_W );
-
-         if( BLOCK_Z_WATER < block_z ) {
-            debug_printf( 1, "starting at %d, %d (z: %d)",
-               gridcity_start_x, gridcity_start_y, block_z );
-            data->buildings[gridcity_idx( gridcity_start_x, gridcity_start_y,
-               GRIDCITY_MAP_W )] = 2;
-         }
-      }
-      gridcity_dump_terrain( data->map, GRIDCITY_MAP_W, GRIDCITY_MAP_H );
+      gridcity_dump_terrain( &(data->city) );
 
       init = 1;
    }
@@ -129,9 +68,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
    if( data->next_ms < retroflat_get_ms() ) {
 
-      gridcity_grow( data->map, data->buildings,
-         GRIDCITY_MAP_W, GRIDCITY_MAP_H );
-         /* data->map_w, data->map_h ); */
+      gridcity_grow( &(data->city) );
 
       /* Timer has expired! */
       data->next_ms = retroflat_get_ms() + 2000;
@@ -146,8 +83,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       retroflat_screen_w(), retroflat_screen_h(),
       RETROFLAT_FLAGS_FILL );
 
-   draw_city( data->view_x, data->view_y, data->map, data->buildings,
-      GRIDCITY_MAP_W, GRIDCITY_MAP_H, data->blocks );
+   gridcity_draw_iso( data );
 
    retroflat_draw_release( NULL );
 }
@@ -155,8 +91,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 int main( int argc, char* argv[] ) {
    struct GRIDCITY_DATA data;
    struct RETROFLAT_ARGS args;
-   int retval = 0,
-      i = 0;
+   int retval = 0;
 
    /* === Setup === */
 
@@ -183,35 +118,12 @@ int main( int argc, char* argv[] ) {
    /* === Allocation and Loading === */
 
    data.view_y = 100;
+   /* TODO: Configurable in options/CLI. */
+   data.city.tiles_w = 40;
+   data.city.tiles_h = 40;
 
-   data.blocks = calloc( sizeof( struct RETROFLAT_BITMAP ), BLOCK_MAX );
-   if( NULL == data.blocks ) {
-      retroflat_message( "GridCity Error", "Unable to allocate blocks!" );
-      retval = ERROR_ALLOC;
-      goto cleanup;
-   }
-   for( i = 0 ; BLOCK_MAX > i ; i++ ) {
-      retval = retroflat_load_bitmap(
-         gc_block_filenames[i], &(data.blocks[i]) );
-      if( RETROFLAT_ERROR_BITMAP == retval ) {
-         goto cleanup;
-      }
-   }
-
-   data.map = calloc( GRIDCITY_MAP_W * GRIDCITY_MAP_H, 1 );
-   if( NULL == data.map ) {
-      retroflat_message( "GridCity Error", "Unable to allocate map!" );
-      retval = ERROR_ALLOC;
-      goto cleanup;
-   }
-   memset( data.map, -1, GRIDCITY_MAP_W * GRIDCITY_MAP_H );
-
-   data.buildings = calloc( GRIDCITY_MAP_W * GRIDCITY_MAP_H, 1 );
-   if( NULL == data.buildings ) {
-      retroflat_message( "GridCity Error", "Unable to allocate buildings!" );
-      retval = ERROR_ALLOC;
-      goto cleanup;
-   }
+   retval = gridcity_init( &(data.city) );
+   maug_cleanup_if_not_ok();
 
    /* === Main Loop === */
 
@@ -221,18 +133,7 @@ cleanup:
 
 #ifndef RETROFLAT_OS_WASM
 
-   if( NULL != data.blocks ) {
-      for( i = 0 ; BLOCK_MAX > i ; i++ ) {
-         if( retroflat_bitmap_ok( &(data.blocks[i]) ) ) {
-            retroflat_destroy_bitmap( &(data.blocks[i]) );
-         }
-      }
-      free( data.blocks );
-   }
-
-   if( NULL != data.map ) {
-      free( data.map );
-   }
+   gridcity_free( &(data.city) );
 
    retroflat_shutdown( retval );
 
