@@ -5,7 +5,9 @@
 
 #include "gridgen.h"
 
-#define GRIDGEN_TRACE_LVL 1
+#include "blocks.h" /* For BLOCK_Z_DIVISOR */
+
+#define GRIDGEN_TRACE_LVL 0
 
 MERROR_RETVAL gridgen_generate_diamond_square_iter(
    struct GRIDCITY* city, int8_t min_z, int8_t max_z, void* data
@@ -74,28 +76,32 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
             corners_y[iter_x][iter_y],
             city->tiles_w );
 
-         if( -1 != tiles[tile_idx].z ) {
+         if( -1 != tiles[tile_idx].terrain ) {
             debug_printf(
                GRIDGEN_TRACE_LVL, "corner coord %d x %d present: %d",
                corners_x[iter_x][iter_y], corners_y[iter_x][iter_y],
-               tiles[tile_idx].z );
+               tiles[tile_idx].terrain );
             continue;
          }
 
          /* Fill in missing corner. */
          avg = min_z + (rand() % (max_z - min_z));
-         debug_printf( GRIDGEN_TRACE_LVL, "missing corner coord %d x %d: rand: %d",
+         debug_printf( GRIDGEN_TRACE_LVL, 
+            "missing corner coord %d x %d: rand: %d",
             corners_x[iter_x][iter_y], corners_y[iter_x][iter_y], avg );
          
          assert( min_z <= avg );
 
-         tiles[tile_idx].z = avg;
+         tiles[tile_idx].terrain = avg;
+         tiles[tile_idx].z = avg / BLOCK_Z_DIVISOR;
       }
    }
 
    if( 2 == data_ds->sect_w && 2 == data_ds->sect_h ) {
       /* Nothing to average, this sector is just corners! */
-      debug_printf( GRIDGEN_TRACE_LVL, "%d return: reached innermost point", iter_depth );
+      debug_printf(
+         GRIDGEN_TRACE_LVL,
+         "%d return: reached innermost point", iter_depth );
       goto cleanup;
    }
    
@@ -107,11 +113,12 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
             corners_x[iter_x][iter_y],
             corners_y[iter_x][iter_y],
             city->tiles_w );
-         debug_printf( GRIDGEN_TRACE_LVL, "%d: adding from coords %d x %d: %d",
+         debug_printf(
+            GRIDGEN_TRACE_LVL, "%d: adding from coords %d x %d: %d",
             iter_depth,
             corners_x[iter_x][iter_y], corners_y[iter_x][iter_y],
-            tiles[tile_idx].z );
-         avg += tiles[tile_idx].z;
+            tiles[tile_idx].terrain );
+         avg += tiles[tile_idx].terrain;
       }
    }
 
@@ -122,16 +129,18 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
       data_ds->sect_x + (data_ds->sect_w / 2),
       data_ds->sect_y + (data_ds->sect_h / 2),
       city->tiles_w );
-   if( -1 != tiles[tile_idx].z ) {
+   if( -1 != tiles[tile_idx].terrain ) {
       debug_printf( GRIDGEN_TRACE_LVL, "avg already present at %d x %d!",
          data_ds->sect_x + (data_ds->sect_w / 2),
          data_ds->sect_y + (data_ds->sect_h / 2) );
    }
-   tiles[tile_idx].z = avg;
+   tiles[tile_idx].terrain = avg;
+   tiles[tile_idx].z = avg / BLOCK_Z_DIVISOR;
 
-   assert( 0 <= tiles[tile_idx].z );
+   assert( 0 <= tiles[tile_idx].terrain );
 
    maug_munlock( city->tiles );
+   tiles = NULL;
 
    /* Recurse into subsectors. */
    for(
@@ -151,7 +160,8 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
          data_ds_sub.sect_w = data_ds->sect_w / 2;
          data_ds_sub.sect_h = data_ds->sect_h / 2;
 
-         debug_printf( GRIDGEN_TRACE_LVL, "%d: child sector at %d x %d, %d wide",
+         debug_printf(
+            GRIDGEN_TRACE_LVL, "%d: child sector at %d x %d, %d wide",
             iter_depth,
             data_ds_sub.sect_x, data_ds_sub.sect_y, data_ds_sub.sect_w );
 
@@ -160,9 +170,14 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
       }
    }
 
-   debug_printf( GRIDGEN_TRACE_LVL, "%d return: all sectors complete", iter_depth );
+   debug_printf(
+      GRIDGEN_TRACE_LVL, "%d return: all sectors complete", iter_depth );
 
 cleanup:
+
+   if( NULL != tiles ) {
+      maug_munlock( city->tiles );
+   }
 
    if( NULL == data && NULL != data_ds ) {
       /* We must've alloced this internally. */
