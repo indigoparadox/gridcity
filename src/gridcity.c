@@ -8,6 +8,8 @@
 
 #include <uprintf.h>
 
+#include "draw.h"
+
 MERROR_RETVAL gridcity_draw_iso( struct GRIDCITY_DATA* data ) {
    int x = -1,
       y = 2,
@@ -20,10 +22,10 @@ MERROR_RETVAL gridcity_draw_iso( struct GRIDCITY_DATA* data ) {
    MERROR_RETVAL retval = MERROR_OK;
    size_t tile_idx = 0;
 
-   tiles = maug_mlock( data->city.tiles );
+   maug_mlock( data->city.tiles, tiles );
    maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles );
 
-   blocks = maug_mlock( data->city.blocks );
+   maug_mlock( data->city.blocks, blocks );
    maug_cleanup_if_null_alloc( struct GRIDCITY_BLOCK*, blocks );
 
    for( y = 0 ; data->city.tiles_h > y ; y++ ) {
@@ -64,11 +66,11 @@ MERROR_RETVAL gridcity_draw_iso( struct GRIDCITY_DATA* data ) {
 cleanup:
 
    if( NULL != blocks ) {
-      maug_munlock( data->city.blocks );
+      maug_munlock( data->city.blocks, blocks );
    }
 
    if( NULL != tiles ) {
-      maug_munlock( data->city.tiles );
+      maug_munlock( data->city.tiles, tiles );
    }
 
    return retval;
@@ -86,13 +88,13 @@ MERROR_RETVAL gridcity_grow( struct GRIDCITY* city ) {
    tiles_new_h = maug_malloc(
       sizeof( struct GRIDCITY_TILE ), city->tiles_h * city->tiles_w );
 
-   tiles_new = maug_mlock( tiles_new_h );
+   maug_mlock( tiles_new_h, tiles_new );
    maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles_new );
    maug_mzero( tiles_new, city->tiles_h * city->tiles_w );
 
    assert( NULL != city->tiles );
 
-   tiles = maug_mlock( city->tiles );
+   maug_mlock( city->tiles, tiles );
    maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles );
 
    for( y = 0 ; city->tiles_h > y ; y++ ) {
@@ -143,11 +145,11 @@ MERROR_RETVAL gridcity_grow( struct GRIDCITY* city ) {
 cleanup:
 
    if( NULL != tiles ) {
-      maug_munlock( city->tiles );
+      maug_munlock( city->tiles, tiles );
    }
 
    if( NULL != tiles_new_h ) {
-      maug_munlock( tiles_new_h );
+      maug_munlock( tiles_new_h, tiles_new );
       maug_mfree( tiles_new_h );
    }
 
@@ -160,7 +162,7 @@ MERROR_RETVAL gridcity_dump_terrain( struct GRIDCITY* city ) {
    struct GRIDCITY_TILE* tiles = NULL;
    MERROR_RETVAL retval = MERROR_OK;
 
-   tiles = maug_mlock( city->tiles );
+   maug_mlock( city->tiles, tiles );
    maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles );
 
    printf( "\n" );
@@ -185,7 +187,7 @@ MERROR_RETVAL gridcity_dump_terrain( struct GRIDCITY* city ) {
 cleanup:
 
    if( NULL != tiles ) {
-      maug_munlock( city->tiles );
+      maug_munlock( city->tiles, tiles );
    }
 
    return retval;
@@ -202,7 +204,7 @@ MERROR_RETVAL gridcity_init( struct GRIDCITY* city ) {
       maug_malloc( sizeof( struct RETROFLAT_BITMAP ), BLOCK_MAX );
    maug_cleanup_if_null_alloc( MAUG_MHANDLE, city->blocks );
 
-   blocks = maug_mlock( city->blocks );
+   maug_mlock( city->blocks, blocks );
    maug_cleanup_if_null_alloc( struct GRIDCITY_BLOCK*, blocks );
 
    for( i = 0 ; BLOCK_MAX > i ; i++ ) {
@@ -217,7 +219,7 @@ MERROR_RETVAL gridcity_init( struct GRIDCITY* city ) {
       city->tiles_w * city->tiles_h );
    maug_cleanup_if_null_alloc( MAUG_MHANDLE, city->tiles );
 
-   tiles = maug_mlock( city->tiles );
+   maug_mlock( city->tiles, tiles );
    maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles );
    maug_mzero(
       tiles, city->tiles_w * city->tiles_h * sizeof( struct GRIDCITY_TILE ) );
@@ -231,11 +233,11 @@ MERROR_RETVAL gridcity_init( struct GRIDCITY* city ) {
 cleanup:
    
    if( NULL != blocks ) {
-      maug_munlock( city->blocks );
+      maug_munlock( city->blocks, blocks );
    }
 
    if( NULL != tiles ) {
-      maug_munlock( city->tiles );
+      maug_munlock( city->tiles, tiles );
    }
 
    return retval;
@@ -252,7 +254,7 @@ void gridcity_free( struct GRIDCITY* city ) {
    if( NULL == city->blocks ) {
       goto cleanup;
    }
-   blocks = maug_mlock( city->blocks );
+   maug_mlock( city->blocks, blocks );
    if( NULL == blocks ) {
       goto cleanup;
    }
@@ -263,7 +265,7 @@ void gridcity_free( struct GRIDCITY* city ) {
       }
    }
 
-   maug_munlock( city->blocks );
+   maug_munlock( city->blocks, blocks );
    maug_mfree( city->blocks );
 
 cleanup:
@@ -279,7 +281,7 @@ MERROR_RETVAL gridcity_build_seed( struct GRIDCITY* city ) {
 
    assert( NULL != city->tiles );
 
-   tiles = maug_mlock( city->tiles );
+   maug_mlock( city->tiles, tiles );
    maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles );
 
    while(
@@ -301,7 +303,7 @@ MERROR_RETVAL gridcity_build_seed( struct GRIDCITY* city ) {
 cleanup:
 
    if( NULL != tiles ) {
-      maug_munlock( city->tiles );
+      maug_munlock( city->tiles, tiles );
    }
 
    return retval;
