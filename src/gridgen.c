@@ -20,15 +20,21 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
    int32_t avg = 0;
    size_t tile_idx = 0;
    struct GRIDGEN_DATA_DSQUARE data_ds_sub;
+   MAUG_MHANDLE data_ds_h = NULL;
    struct GRIDGEN_DATA_DSQUARE* data_ds = NULL;
    struct GRIDCITY_TILE* tiles = NULL;
    MERROR_RETVAL retval = MERROR_OK;
 
-   tiles = maug_mlock( city->tiles );
+   maug_mlock( city->tiles, tiles );
    maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles );
 
    if( NULL == data ) {
-      data_ds = calloc( sizeof( struct GRIDGEN_DATA_DSQUARE ), 1 );
+      data_ds_h = maug_malloc( 1, sizeof( struct GRIDGEN_DATA_DSQUARE ) );
+      maug_cleanup_if_null_alloc( MAUG_MHANDLE, data_ds_h );
+      maug_mlock( data_ds_h, data_ds );
+      maug_cleanup_if_null_alloc( struct GRIDGEN_DATA_DSQUARE*, data_ds );
+      maug_mzero( data_ds, sizeof( struct GRIDGEN_DATA_DSQUARE ) );
+
       data_ds->sect_w = city->tiles_w;
       data_ds->sect_h = city->tiles_h;
    } else {
@@ -139,7 +145,7 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
 
    assert( 0 <= tiles[tile_idx].terrain );
 
-   maug_munlock( city->tiles );
+   maug_munlock( city->tiles, tiles );
    tiles = NULL;
 
    /* Recurse into subsectors. */
@@ -176,12 +182,13 @@ MERROR_RETVAL gridgen_generate_diamond_square_iter(
 cleanup:
 
    if( NULL != tiles ) {
-      maug_munlock( city->tiles );
+      maug_munlock( city->tiles, tiles );
    }
 
    if( NULL == data && NULL != data_ds ) {
       /* We must've alloced this internally. */
-      free( data_ds );
+      maug_munlock( data_ds_h, data_ds );
+      maug_mfree( data_ds_h );
    }
 
    return retval;

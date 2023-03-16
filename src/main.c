@@ -6,6 +6,8 @@
 #define MAUG_C
 #include <maug.h>
 
+#include <mmem.h>
+
 #define MARGE_C
 #include <marge.h>
 
