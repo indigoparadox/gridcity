@@ -1,6 +1,9 @@
 
 # vim: ft=make noexpandtab
 
+#SDL_VER_UNIX=2
+#WING=1
+VDP=1
 SCREENSAVER=1
 C_FILES := src/main.c src/gridcity.c src/draw.c src/gridgen.c
 
@@ -13,6 +16,10 @@ include maug/Makefile.inc
 all: grdcty.ale grdcty.sdl grdctyw.exe grdctyd.exe grdctynt.exe grdcty.html grdctyw3.exe
 
 $(eval $(call DIRTOXPMS,blocks,src))
+
+# Nintendo DS
+
+$(eval $(call TGTNDSLIBN,grdcty,grdcty.bmp))
 
 # Unix.Allegro
 
@@ -34,9 +41,6 @@ $(eval $(call TGTWINICO,grdcty))
 
 $(eval $(call TGTWIN386,grdcty))
 
-# TODO: Until WinG works with Win386...
-WING=1
-
 $(eval $(call TGTWIN16,grdcty))
 
 # DOS
@@ -46,6 +50,8 @@ $(eval $(call TGTDOSALE,grdcty))
 # Windows NT
 
 $(eval $(call TGTWINNT,grdcty))
+
+$(eval $(call TGTWINNTGCC,grdcty))
 
 clean:
 	rm -rf $(CLEAN_TARGETS)
