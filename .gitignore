@@ -30,3 +30,5 @@ src/blocks_xpm.h
 *.wasm
 gmon.*
 log.txt
+*.ico
+*.rc
