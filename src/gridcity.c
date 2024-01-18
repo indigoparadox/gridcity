@@ -148,8 +148,11 @@ cleanup:
       maug_munlock( city->tiles, tiles );
    }
 
-   if( NULL != tiles_new_h ) {
+   if( NULL != tiles_new ) {
       maug_munlock( tiles_new_h, tiles_new );
+   }
+
+   if( NULL != tiles_new_h ) {
       maug_mfree( tiles_new_h );
    }
 
