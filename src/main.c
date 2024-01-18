@@ -129,7 +129,7 @@ int main( int argc, char* argv[] ) {
 
    /* === Main Loop === */
 
-   retroflat_loop( (retroflat_loop_iter)gridcity_loop, &data );
+   retroflat_loop( (retroflat_loop_iter)gridcity_loop, NULL, &data );
 
 cleanup:
 
