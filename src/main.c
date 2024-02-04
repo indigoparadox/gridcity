@@ -4,32 +4,28 @@
 #endif /* BLOCKS_XPM */
 
 #define MAUG_C
-#include <maug.h>
-
-#include <mmem.h>
-
-#define MARGE_C
-#include <marge.h>
-
-#define RETROFLT_C
-#include <retroflt.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 
-#include "gridcity.h"
 #define BLOCKS_C
-#include "blocks.h"
-#include "draw.h"
-#include "gridgen.h"
+#include "gridcity.h"
 
 #define ERROR_ALLOC 0x100
 
 void gridcity_loop( struct GRIDCITY_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    static int init = 0;
+   struct RETROTILE* city = NULL;
+   MERROR_RETVAL retval = MERROR_OK;
+   struct RETROFLAT_BITMAP* blocks = NULL;
+
+   maug_mlock( data->city_h, city );
+   maug_cleanup_if_null_alloc( struct RETROTILE*, city );
+
+   maug_mlock( data->blocks_h, blocks );
+   maug_cleanup_if_null_alloc( struct RETROFLAT_BITMAP*, blocks );
 
    if( !init ) {
       /* Show "Generating Terrain..." */
@@ -48,12 +44,13 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       retroflat_draw_release( NULL );
 
       /* Generate terrain. */
-      gridgen_generate_diamond_square( &(data->city), 0, BLOCK_MAX_Z );
+      retrotile_gen_diamond_square_iter(
+         city, 0, BLOCK_MAX_Z, GRIDCITY_LAYER_IDX_TERRAIN, NULL );
 
       /* Pick random starting plot. */
-      gridcity_build_seed( &(data->city) );
+      gridcity_build_seed( city );
 
-      gridcity_dump_terrain( &(data->city) );
+      /* gridcity_dump_terrain( city ); */
 
       init = 1;
    }
@@ -70,7 +67,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
    if( data->next_ms < retroflat_get_ms() ) {
 
-      gridcity_grow( &(data->city) );
+      gridcity_grow( city );
 
       /* Timer has expired! */
       data->next_ms = retroflat_get_ms() + 2000;
@@ -85,9 +82,24 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       retroflat_screen_w(), retroflat_screen_h(),
       RETROFLAT_FLAGS_FILL );
 
-   gridcity_draw_iso( data );
+   draw_city_iso(
+      city, data->view_x, data->view_y, blocks, data->blocks_sz );
 
    retroflat_draw_release( NULL );
+
+cleanup:
+
+   if( NULL != blocks ) {
+      maug_munlock( data->blocks_h, blocks );
+   }
+
+   if( NULL != city ) {
+      maug_munlock( data->city_h, city );
+   }
+
+   if( MERROR_OK != retval ) {
+      retroflat_quit( retval );
+   }
 }
 
 int main( int argc, char* argv[] ) {
@@ -119,12 +131,10 @@ int main( int argc, char* argv[] ) {
 
    /* === Allocation and Loading === */
 
-   data.view_y = 100;
-   /* TODO: Configurable in options/CLI. */
-   data.city.tiles_w = 40;
-   data.city.tiles_h = 40;
-
-   retval = gridcity_init( &(data.city) );
+   retval = retrotile_alloc( &(data.city_h), 40, 40, 2 );
+   maug_cleanup_if_not_ok();
+   
+   retval = draw_init_blocks( &(data.blocks_h), &(data.blocks_sz) );
    maug_cleanup_if_not_ok();
 
    /* === Main Loop === */
@@ -135,7 +145,7 @@ cleanup:
 
 #ifndef RETROFLAT_OS_WASM
 
-   gridcity_free( &(data.city) );
+   maug_mfree( data.city_h );
 
    retroflat_shutdown( retval );
 

@@ -5,7 +5,7 @@
 #WING=1
 VDP=1
 SCREENSAVER=1
-C_FILES := src/main.c src/gridcity.c src/draw.c src/gridgen.c
+C_FILES := src/main.c src/gridcity.c src/draw.c
 
 DEFINES_GCC += -DBLOCKS_XPM
 
