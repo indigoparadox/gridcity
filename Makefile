@@ -8,6 +8,7 @@ SCREENSAVER=1
 C_FILES := src/main.c src/gridcity.c src/draw.c
 
 DEFINES_GCC += -DBLOCKS_XPM
+#-DRETROTILE_TRACE_LVL=1
 
 include maug/Makefile.inc
 

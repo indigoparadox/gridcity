@@ -44,13 +44,21 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       retroflat_draw_release( NULL );
 
       /* Generate terrain. */
-      retrotile_gen_diamond_square_iter(
-         city, 0, BLOCK_MAX_Z, GRIDCITY_LAYER_IDX_TERRAIN, NULL );
+      retval = retrotile_gen_diamond_square_iter(
+         city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL );
+      maug_cleanup_if_not_ok();
+
+      debug_printf( 1, "smoothing terrain..." );
+
+      /* Smooth terrain. */
+      retval = retrotile_gen_smooth_iter(
+         city, 0, 0, 0, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL );
+      maug_cleanup_if_not_ok();
 
       /* Pick random starting plot. */
-      gridcity_build_seed( city );
+      /* gridcity_build_seed( city ); */
 
-      /* gridcity_dump_terrain( city ); */
+      gridcity_dump_terrain( city );
 
       init = 1;
    }
@@ -67,7 +75,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
    if( data->next_ms < retroflat_get_ms() ) {
 
-      gridcity_grow( city );
+      /* gridcity_grow( city ); */
 
       /* Timer has expired! */
       data->next_ms = retroflat_get_ms() + 2000;
@@ -146,6 +154,8 @@ cleanup:
 #ifndef RETROFLAT_OS_WASM
 
    maug_mfree( data.city_h );
+
+   gridcity_free_blocks( &data );
 
    retroflat_shutdown( retval );
 

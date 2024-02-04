@@ -89,15 +89,15 @@ cleanup:
    return retval;
 }
 
-#if 0
-MERROR_RETVAL gridcity_dump_terrain( struct GRIDCITY* city ) {
+MERROR_RETVAL gridcity_dump_terrain( struct RETROTILE* city ) {
    int x = 0,
       y = 0;
-   struct GRIDCITY_TILE* tiles = NULL;
    MERROR_RETVAL retval = MERROR_OK;
+   struct RETROTILE_LAYER* layer_terrain = NULL;
+   retrotile_tile_t tile_idx = 0;
 
-   maug_mlock( city->tiles, tiles );
-   maug_cleanup_if_null_alloc( struct GRIDCITY_TILE*, tiles );
+   layer_terrain = retrotile_get_layer_p(
+      city, GRIDCITY_LAYER_IDX_TERRAIN );
 
    printf( "\n" );
    printf( "      " );
@@ -112,52 +112,40 @@ MERROR_RETVAL gridcity_dump_terrain( struct GRIDCITY* city ) {
    for( y = 0 ; city->tiles_h > y ; y++ ) {
       printf( "%03d | ", y );
       for( x = 0 ; city->tiles_h > x ; x++ ) {
-         printf( "%03d ", tiles[gridcity_idx( x, y, city->tiles_w )].z );
+         tile_idx = retrotile_get_tile( city, layer_terrain, x, y );
+         printf( "%03d ", tile_idx );
       }
       printf( "\n" );
    }
    printf( "\n" );
 
-cleanup:
-
-   if( NULL != tiles ) {
-      maug_munlock( city->tiles, tiles );
-   }
-
    return retval;
 }
 
-
-
-void gridcity_free( struct GRIDCITY* city ) {
-   struct GRIDCITY_BLOCK* blocks;
+void gridcity_free_blocks( struct GRIDCITY_DATA* data ) {
+   struct RETROFLAT_BITMAP* blocks;
    size_t i = 0;
 
-   if( NULL != city->tiles ) {
-      maug_mfree( city->tiles );
-   }
-
-   if( NULL == city->blocks ) {
+   if( NULL == data->blocks_h ) {
       goto cleanup;
    }
-   maug_mlock( city->blocks, blocks );
+   maug_mlock( data->blocks_h, blocks );
    if( NULL == blocks ) {
       goto cleanup;
    }
 
-   for( i = 0 ; city->blocks_sz > i ; i++ ) {
-      if( retroflat_bitmap_ok( &(blocks[i].bmp) ) ) {
-         retroflat_destroy_bitmap( &(blocks[i].bmp) );
+   for( i = 0 ; data->blocks_sz > i ; i++ ) {
+      if( retroflat_bitmap_ok( &(blocks[i]) ) ) {
+         retroflat_destroy_bitmap( &(blocks[i]) );
       }
    }
 
-   maug_munlock( city->blocks, blocks );
-   maug_mfree( city->blocks );
+   maug_munlock( data->blocks_h, blocks );
+   maug_mfree( data->blocks_h );
 
 cleanup:
    return;
 }
-#endif
 
 MERROR_RETVAL gridcity_build_seed( struct RETROTILE* city ) {
    int16_t gridcity_start_x = -1;

@@ -21,9 +21,8 @@ struct GRIDCITY_DATA {
 };
 
 MERROR_RETVAL gridcity_grow( struct RETROTILE* city );
-#if 0
-MERROR_RETVAL gridcity_dump_terrain( struct GRIDCITY* city );
-#endif
+MERROR_RETVAL gridcity_dump_terrain( struct RETROTILE* city );
+void gridcity_free_blocks( struct GRIDCITY_DATA* data );
 MERROR_RETVAL gridcity_build_seed( struct RETROTILE* city );
 
 #define gridcity_idx( x, y, w ) (((y) * (w)) + (x))

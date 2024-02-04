@@ -22,7 +22,7 @@
 
 #define BLOCK_MAX_Z 100
 #define BLOCK_Z_DIVISOR 5
-#define BLOCK_Z_WATER 8
+#define BLOCK_Z_WATER 50
 
 #define block_get_id( b )
 

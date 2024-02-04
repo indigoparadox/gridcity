@@ -67,7 +67,7 @@ MERROR_RETVAL draw_city_iso(
       px_x = 0,
       px_y = 0,
       block_id = 0,
-      offset_y = 100;
+      offset_y = 200;
    struct RETROTILE_LAYER* layer_terrain = NULL;
    struct RETROTILE_LAYER* layer_build = NULL;
    MERROR_RETVAL retval = MERROR_OK;
@@ -108,8 +108,12 @@ MERROR_RETVAL draw_city_iso(
             &(blocks[block_id]),
             0, 0,
             px_x,
-            offset_y + BLOCK_Z_WATER >= tile_terrain_idx ?
-               px_y - BLOCK_Z_WATER : px_y - tile_terrain_idx,
+            BLOCK_Z_WATER >= tile_terrain_idx ?
+               offset_y + px_y - BLOCK_Z_WATER :
+               offset_y + px_y - tile_terrain_idx,
+            /* offset_y + px_y - tile_terrain_idx, */
+            /* offset_y + BLOCK_Z_WATER >= tile_terrain_idx ?
+               px_y - BLOCK_Z_WATER : px_y - tile_terrain_idx, */
             BLOCK_PX_W, BLOCK_PX_H );
       }
    }
