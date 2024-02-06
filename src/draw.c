@@ -60,14 +60,13 @@ cleanup:
 
 MERROR_RETVAL draw_city_iso(
    struct RETROTILE* city, int view_x, int view_y,
-   struct RETROFLAT_BITMAP* blocks, size_t blocks_sz
+   struct RETROFLAT_BITMAP* blocks, size_t blocks_sz, int offset_y
 ) {
    int x = -1,
       y = 2,
       px_x = 0,
       px_y = 0,
-      block_id = 0,
-      offset_y = 200;
+      block_id = 0;
    struct RETROTILE_LAYER* layer_terrain = NULL;
    struct RETROTILE_LAYER* layer_build = NULL;
    MERROR_RETVAL retval = MERROR_OK;
@@ -93,23 +92,29 @@ MERROR_RETVAL draw_city_iso(
          /* If the block is water, it's 0, if it's grass, it's 1, otherwise
           * it's a building.
           */
+#ifndef GRIDCITY_NO_WATER
          if( BLOCK_Z_WATER >= tile_terrain_idx ) {
             block_id = 0;
          } else {
+#endif /* !GRIDCITY_NO_WATER */
             if( 0 == tile_build_idx ) {
                block_id = 1;
             } else {
                block_id = tile_build_idx;
             }
+#ifndef GRIDCITY_NO_WATER
          }
+#endif /* !GRIDCITY_NO_WATER */
 
          retroflat_blit_bitmap(
             NULL,
             &(blocks[block_id]),
             0, 0,
             px_x,
+#ifndef GRIDCITY_NO_WATER
             BLOCK_Z_WATER >= tile_terrain_idx ?
                offset_y + px_y - BLOCK_Z_WATER :
+#endif /* !GRIDCITY_NO_WATER */
                offset_y + px_y - tile_terrain_idx,
             /* offset_y + px_y - tile_terrain_idx, */
             /* offset_y + BLOCK_Z_WATER >= tile_terrain_idx ?
