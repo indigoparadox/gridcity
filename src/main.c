@@ -14,6 +14,55 @@
 
 #define ERROR_ALLOC 0x100
 
+MERROR_RETVAL gridcity_gen_ani_cb( void* animation_cb_data, int16_t iter ) {
+   static int8_t gen_iter = 0;
+   MAUG_CONST char c_gen_strings[][4] = {
+      ".",
+      "..",
+      "...",
+      ""
+   };
+   char gen_str[30];
+   MERROR_RETVAL retval = MERROR_OK;
+   struct RETROFLAT_INPUT input_evt;
+   RETROFLAT_IN_KEY input = 0;
+
+   /* Check for cancel. */
+
+   input = retroflat_poll_input( &input_evt );
+
+   switch( input ) {
+   case RETROFLAT_KEY_ESC:
+      retroflat_quit( MERROR_GUI );
+      retval = MERROR_GUI;
+      break;
+   }
+
+   /* Draw status update. */
+
+   retroflat_draw_lock( NULL );
+
+   retroflat_rect(
+      NULL, RETROFLAT_COLOR_BLACK, 0, 0,
+      retroflat_screen_w(), retroflat_screen_h(),
+      RETROFLAT_FLAGS_FILL );
+
+   maug_snprintf( gen_str, 30, "Generating Terrain (%d)%s",
+      iter, c_gen_strings[gen_iter] );
+
+   retroflat_string(
+      NULL, RETROFLAT_COLOR_RED, gen_str, 0, NULL, 10, 10, 0 );
+
+   retroflat_draw_release( NULL );
+
+   gen_iter++;
+   if( '\0' == c_gen_strings[gen_iter][0] ) {
+      gen_iter = 0;
+   }
+
+   return retval;
+}
+
 void gridcity_loop( struct GRIDCITY_DATA* data ) {
    struct RETROFLAT_INPUT input_evt;
    static int init = 0;
@@ -45,20 +94,24 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
       /* Generate terrain. */
       retval = retrotile_gen_diamond_square_iter(
-         city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL );
+         city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
+         gridcity_gen_ani_cb, NULL );
       maug_cleanup_if_not_ok();
 
       debug_printf( 1, "smoothing terrain..." );
 
       /* Smooth terrain. */
       retval = retrotile_gen_smooth_iter(
-         city, 0, 0, 0, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL );
+         city, 0, 0, 0, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
+         gridcity_gen_ani_cb, NULL );
       maug_cleanup_if_not_ok();
 
       /* Pick random starting plot. */
       /* gridcity_build_seed( city ); */
 
+#ifdef DEBUG
       gridcity_dump_terrain( city );
+#endif /* DEBUG */
 
       init = 1;
    }
@@ -91,7 +144,8 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       RETROFLAT_FLAGS_FILL );
 
    draw_city_iso(
-      city, data->view_x, data->view_y, blocks, data->blocks_sz );
+      city, data->view_x, data->view_y, blocks, data->blocks_sz,
+      retroflat_screen_h() >> 1 );
 
    retroflat_draw_release( NULL );
 
