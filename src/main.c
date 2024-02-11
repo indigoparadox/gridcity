@@ -92,6 +92,12 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
       retroflat_draw_release( NULL );
 
+#ifdef GRIDCITY_VORONOI
+      retval = retrotile_gen_voronoi_iter(
+         city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
+         gridcity_gen_ani_cb, NULL );
+      maug_cleanup_if_not_ok();
+#else
       /* Generate terrain. */
       retval = retrotile_gen_diamond_square_iter(
          city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
@@ -105,6 +111,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
          city, 0, 0, 0, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
          gridcity_gen_ani_cb, NULL );
       maug_cleanup_if_not_ok();
+#endif /* GRIDCITY_VORONOI */
 
       /* Pick random starting plot. */
       /* gridcity_build_seed( city ); */
