@@ -42,10 +42,12 @@ MERROR_RETVAL gridcity_gen_ani_cb( void* animation_cb_data, int16_t iter ) {
 
    retroflat_draw_lock( NULL );
 
-   retroflat_rect(
-      NULL, RETROFLAT_COLOR_BLACK, 0, 0,
-      retroflat_screen_w(), retroflat_screen_h(),
-      RETROFLAT_FLAGS_FILL );
+   if( 0 == gen_iter ) {
+      retroflat_rect(
+         NULL, RETROFLAT_COLOR_BLACK, 0, 0,
+         40, 20,
+         RETROFLAT_FLAGS_FILL );
+   }
 
    maug_snprintf( gen_str, 30, "Generating Terrain (%d)%s",
       iter, c_gen_strings[gen_iter] );
@@ -81,14 +83,12 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
       retroflat_draw_lock( NULL );
 
+#if 0
       retroflat_rect(
          NULL, RETROFLAT_COLOR_BLACK, 0, 0,
          retroflat_screen_w(), retroflat_screen_h(),
          RETROFLAT_FLAGS_FILL );
-
-      retroflat_string(
-         NULL, RETROFLAT_COLOR_RED,
-         "Generating Terrain", 19, NULL, 10, 10, 0 );
+#endif
 
       retroflat_draw_release( NULL );
 
@@ -116,9 +116,9 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       /* Pick random starting plot. */
       /* gridcity_build_seed( city ); */
 
-#ifdef DEBUG
+#ifdef DEBUG_RETROTILE
       gridcity_dump_terrain( city );
-#endif /* DEBUG */
+#endif /* DEBUG_RETROTILE */
 
       init = 1;
    }
@@ -145,10 +145,12 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
    retroflat_draw_lock( NULL );
 
+#if 0
    retroflat_rect(
       NULL, RETROFLAT_COLOR_GRAY, 0, 0,
       retroflat_screen_w(), retroflat_screen_h(),
       RETROFLAT_FLAGS_FILL );
+#endif
 
    draw_city_iso(
       city, data->view_x, data->view_y, blocks, data->blocks_sz,
@@ -187,8 +189,6 @@ int main( int argc, char* argv[] ) {
    memset( &args, 0, sizeof( struct RETROFLAT_ARGS ) );
 
    args.title = "GridCity";
-   args.screen_w = 640;
-   args.screen_h = 480;
    args.assets_path = "blocks";
 
    memset( &data, '\0', sizeof( struct GRIDCITY_DATA ) );
@@ -200,7 +200,7 @@ int main( int argc, char* argv[] ) {
 
    /* === Allocation and Loading === */
 
-   retval = retrotile_alloc( &(data.city_h), 40, 40, 2 );
+   retval = retrotile_alloc( &(data.city_h), 20, 20, 2 );
    maug_cleanup_if_not_ok();
    
    retval = draw_init_blocks( &(data.blocks_h), &(data.blocks_sz) );
