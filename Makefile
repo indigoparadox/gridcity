@@ -6,11 +6,12 @@
 VDP=1
 SCREENSAVER=1
 C_FILES := src/main.c src/gridcity.c src/draw.c
+RETROFLAT_DOS_MEM_LARGE=1
 
 DEFINES_GCC += -DBLOCKS_XPM
+#-DRETROTILE_TRACE_LVL=1
 #-DGRIDCITY_VORONOI
 #-DGRIDCITY_NO_WATER
-#-DRETROTILE_TRACE_LVL=1
 
 include maug/Makefile.inc
 
@@ -49,6 +50,8 @@ $(eval $(call TGTWIN16,grdcty))
 # DOS
 
 $(eval $(call TGTDOSALE,grdcty))
+
+$(eval $(call TGTDOSBIOS,grdcty))
 
 # Windows NT
 

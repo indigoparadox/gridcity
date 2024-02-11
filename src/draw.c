@@ -64,9 +64,11 @@ MERROR_RETVAL draw_city_iso(
 ) {
    int x = -1,
       y = 2,
-      px_x = 0,
-      px_y = 0,
+      tile_y = 0,
       block_id = 0;
+   size_t
+      px_x = 0,
+      px_y = 0;
    struct RETROTILE_LAYER* layer_terrain = NULL;
    struct RETROTILE_LAYER* layer_build = NULL;
    MERROR_RETVAL retval = MERROR_OK;
@@ -87,7 +89,8 @@ MERROR_RETVAL draw_city_iso(
          tile_terrain_idx = retrotile_get_tile( city, layer_terrain, x, y );
 
          /* TODO: Optimize drawing off-screen out. */
-         draw_grid_to_screen_coords( &px_x, &px_y, x, y, view_x, view_y );
+         draw_grid_to_screen_coords(
+            &px_x, &tile_y, x, y, view_x, view_y );
 
          /* If the block is water, it's 0, if it's grass, it's 1, otherwise
           * it's a building.
@@ -106,16 +109,30 @@ MERROR_RETVAL draw_city_iso(
          }
 #endif /* !GRIDCITY_NO_WATER */
 
+#ifndef GRIDCITY_NO_WATER
+         if( BLOCK_Z_WATER >= tile_terrain_idx ) {
+            px_y = offset_y + tile_y - BLOCK_Z_WATER;
+         } else {
+#endif /* !GRIDCITY_NO_WATER */
+            px_y = offset_y + tile_y - tile_terrain_idx;
+#ifndef GRIDCITY_NO_WATER
+         }
+#endif /* !GRIDCITY_NO_WATER */
+
+         /* Don't draw off-screen! */
+         if(
+            px_x + BLOCK_PX_W >= retroflat_screen_w() ||
+            px_y + BLOCK_PX_H >= retroflat_screen_h()
+         ) {
+            continue;
+         }
+
          retroflat_blit_bitmap(
             NULL,
             &(blocks[block_id]),
             0, 0,
             px_x,
-#ifndef GRIDCITY_NO_WATER
-            BLOCK_Z_WATER >= tile_terrain_idx ?
-               offset_y + px_y - BLOCK_Z_WATER :
-#endif /* !GRIDCITY_NO_WATER */
-               offset_y + px_y - tile_terrain_idx,
+            px_y,
             /* offset_y + px_y - tile_terrain_idx, */
             /* offset_y + BLOCK_Z_WATER >= tile_terrain_idx ?
                px_y - BLOCK_Z_WATER : px_y - tile_terrain_idx, */
