@@ -45,7 +45,8 @@ MERROR_RETVAL draw_init_blocks(
    maug_cleanup_if_null_alloc( struct RETROFLAT_BITMAP*, blocks );
 
    for( i = 0 ; *p_blocks_sz > i ; i++ ) {
-      retval = retroflat_load_bitmap( gc_block_filenames[i], &(blocks[i]) );
+      retval = retroflat_load_bitmap(
+         gc_block_filenames[i], &(blocks[i]), 0 );
       maug_cleanup_if_not_ok();
    }
 
@@ -65,8 +66,7 @@ MERROR_RETVAL draw_city_iso(
    int x = -1,
       y = 2,
       tile_y = 0,
-      block_id = 0;
-   size_t
+      block_id = 0,
       px_x = 0,
       px_y = 0;
    struct RETROTILE_LAYER* layer_terrain = NULL;
@@ -86,7 +86,8 @@ MERROR_RETVAL draw_city_iso(
       for( x = city->tiles_w - 1 ; 0 <= x ; x-- ) {
 
          tile_build_idx = retrotile_get_tile( city, layer_build, x, y );
-         tile_terrain_idx = retrotile_get_tile( city, layer_terrain, x, y );
+         tile_terrain_idx =
+            retrotile_get_tile( city, layer_terrain, x, y );
 
          /* TODO: Optimize drawing off-screen out. */
          draw_grid_to_screen_coords(
