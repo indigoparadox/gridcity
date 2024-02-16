@@ -7,7 +7,6 @@ MERROR_RETVAL gridcity_grow( struct RETROTILE* city ) {
    unsigned char building_id = 0;
    MAUG_MHANDLE tiles_new_h = NULL;
    retrotile_tile_t* tiles_new = NULL;
-   retrotile_tile_t* tiles_build = NULL;
    MERROR_RETVAL retval = MERROR_OK;
    struct RETROTILE_LAYER* layer_terrain = NULL;
    struct RETROTILE_LAYER* layer_build = NULL;
@@ -72,8 +71,7 @@ MERROR_RETVAL gridcity_grow( struct RETROTILE* city ) {
    }
 
    /* Copy the new buildings all at once. */
-   tiles_build = retrotile_get_tiles_p( layer_build );
-   memcpy( tiles_build, tiles_new, 
+   memcpy( retrotile_get_tiles_p( layer_build ), tiles_new, 
       city->tiles_w * city->tiles_h * sizeof( retrotile_tile_t ) );
 
 cleanup:
