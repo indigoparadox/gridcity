@@ -17,7 +17,7 @@ struct GRIDCITY_DATA {
    size_t blocks_sz;
    int view_x;
    int view_y;
-   int next_ms;
+   retroflat_ms_t next_ms;
 };
 
 MERROR_RETVAL gridcity_grow( struct RETROTILE* city );
