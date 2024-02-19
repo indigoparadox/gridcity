@@ -2,6 +2,10 @@
 #ifndef GRIDCITY_H
 #define GRIDCITY_H
 
+#ifdef RETROFLAT_XPM
+#include "blocks_xpm.h"
+#endif /* BLOCKS_XPM */
+
 #include <maug.h>
 #include <retrotil.h>
 
