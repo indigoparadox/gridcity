@@ -1,8 +1,4 @@
 
-#ifdef BLOCKS_XPM
-#include "blocks_xpm.h"
-#endif /* BLOCKS_XPM */
-
 #define MAUG_C
 #include <stdlib.h>
 #include <stdio.h>
