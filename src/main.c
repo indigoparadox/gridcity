@@ -117,6 +117,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 #endif /* DEBUG_RETROTILE */
 
       init = 1;
+      data->dirty = 1;
    }
 
    /* === Check Input === */
@@ -141,16 +142,17 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 
    retroflat_draw_lock( NULL );
 
-#if 0
-   retroflat_rect(
-      NULL, RETROFLAT_COLOR_GRAY, 0, 0,
-      retroflat_screen_w(), retroflat_screen_h(),
-      RETROFLAT_FLAGS_FILL );
-#endif
+   if( data->dirty ) {
+      retroflat_rect(
+         NULL, RETROFLAT_COLOR_GRAY, 0, 0,
+         retroflat_screen_w(), retroflat_screen_h(),
+         RETROFLAT_FLAGS_FILL );
+      draw_city_iso(
+         city, data->view_x, data->view_y, blocks, data->blocks_sz,
+         retroflat_screen_h() >> 1 );
 
-   draw_city_iso(
-      city, data->view_x, data->view_y, blocks, data->blocks_sz,
-      retroflat_screen_h() >> 1 );
+      data->dirty = 0;
+   }
 
    retroflat_draw_release( NULL );
 
@@ -205,6 +207,8 @@ int main( int argc, char* argv[] ) {
    /* === Main Loop === */
 
    retroflat_loop( (retroflat_loop_iter)gridcity_loop, NULL, &data );
+
+   data.dirty = 1;
 
 cleanup:
 
