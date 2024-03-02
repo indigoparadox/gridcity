@@ -6,7 +6,7 @@
 #ifdef RETROFLAT_XPM
 #define blocks_C
 #include "blocks_xpm.h"
-#endif /* BLOCKS_XPM */
+#endif /* RETROFLAT_XPM */
 
 #include "gridcity.h"
 
@@ -50,13 +50,13 @@ MERROR_RETVAL draw_init_blocks(
    maug_cleanup_if_null_alloc( struct RETROFLAT_BITMAP*, blocks );
 
    for( i = 0 ; *p_blocks_sz > i ; i++ ) {
-#ifdef BLOCKS_XPM
+#ifdef RETROFLAT_XPM
       retval = retroflat_load_xpm(
          gc_block_filenames[i], &(blocks[i]), 0 );
 #else
       retval = retroflat_load_bitmap(
          gc_block_filenames[i], &(blocks[i]), 0 );
-#endif /* BLOCKS_XPM */
+#endif /* RETROFLAT_XPM */
       maug_cleanup_if_not_ok();
    }
 

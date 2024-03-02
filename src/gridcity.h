@@ -4,7 +4,7 @@
 
 #ifdef RETROFLAT_XPM
 #include "blocks_xpm.h"
-#endif /* BLOCKS_XPM */
+#endif /* RETROFLAT_XPM */
 
 #include <maug.h>
 #include <retrotil.h>
@@ -22,6 +22,7 @@ struct GRIDCITY_DATA {
    int view_x;
    int view_y;
    retroflat_ms_t next_ms;
+   uint8_t dirty;
 };
 
 MERROR_RETVAL gridcity_grow( struct RETROTILE* city );
