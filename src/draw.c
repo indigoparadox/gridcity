@@ -147,7 +147,8 @@ MERROR_RETVAL draw_city_iso(
             /* offset_y + px_y - tile_terrain_idx, */
             /* offset_y + BLOCK_Z_WATER >= tile_terrain_idx ?
                px_y - BLOCK_Z_WATER : px_y - tile_terrain_idx, */
-            BLOCK_PX_W, BLOCK_PX_H );
+            BLOCK_PX_W, BLOCK_PX_H,
+            RETROFLAT_INSTANCE_NULL );
       }
    }
 
