@@ -19,7 +19,7 @@ include maug/Makefile.inc
 
 all: grdcty.ale grdcty.sdl grdctyw.exe grdctyd.exe grdctynt.exe grdcty.html grdctyw3.exe
 
-$(eval $(call DIRTOXPMS,blocks,src))
+$(eval $(call RETROXPM,$(wildcard blocks/*.bmp)))
 
 # Nintendo DS
 

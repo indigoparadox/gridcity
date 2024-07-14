@@ -3,11 +3,6 @@
 
 #include <maug.h>
 
-#ifdef RETROFLAT_XPM
-#define blocks_C
-#include "blocks_xpm.h"
-#endif /* RETROFLAT_XPM */
-
 #include "gridcity.h"
 
 void draw_grid_from_screen_coords(
