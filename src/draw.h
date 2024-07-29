@@ -16,7 +16,7 @@ MERROR_RETVAL draw_init_blocks(
    MAUG_MHANDLE* p_blocks_h, size_t* p_blocks_sz );
 
 MERROR_RETVAL draw_city_iso(
-   struct RETROTILE* city, int view_x, int view_y,
+   struct RETROTILE* city, int view_x, int view_y, int avg,
    struct RETROFLAT_BITMAP* blocks, size_t blocks_sz, int offset_y );
 
 #endif /* !DRAW_H */

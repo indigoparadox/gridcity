@@ -65,7 +65,7 @@ cleanup:
 }
 
 MERROR_RETVAL draw_city_iso(
-   struct RETROTILE* city, int view_x, int view_y,
+   struct RETROTILE* city, int view_x, int view_y, int avg,
    struct RETROFLAT_BITMAP* blocks, size_t blocks_sz, int offset_y
 ) {
    int x = -1,
@@ -77,8 +77,8 @@ MERROR_RETVAL draw_city_iso(
    struct RETROTILE_LAYER* layer_terrain = NULL;
    struct RETROTILE_LAYER* layer_build = NULL;
    MERROR_RETVAL retval = MERROR_OK;
-   retrotile_tile_t tile_build_idx = 0;
-   retrotile_tile_t tile_terrain_idx = 0;
+   retroflat_tile_t tile_build_idx = 0;
+   retroflat_tile_t tile_terrain_idx = 0;
 
    layer_terrain = retrotile_get_layer_p(
       city, GRIDCITY_LAYER_IDX_TERRAIN );
@@ -102,7 +102,7 @@ MERROR_RETVAL draw_city_iso(
           * it's a building.
           */
 #ifndef GRIDCITY_NO_WATER
-         if( BLOCK_Z_WATER >= tile_terrain_idx ) {
+         if( avg >= tile_terrain_idx ) {
             block_id = 0;
          } else {
 #endif /* !GRIDCITY_NO_WATER */
@@ -116,8 +116,8 @@ MERROR_RETVAL draw_city_iso(
 #endif /* !GRIDCITY_NO_WATER */
 
 #ifndef GRIDCITY_NO_WATER
-         if( BLOCK_Z_WATER >= tile_terrain_idx ) {
-            px_y = offset_y + tile_y - BLOCK_Z_WATER;
+         if( avg >= tile_terrain_idx ) {
+            px_y = offset_y + tile_y - avg;
          } else {
 #endif /* !GRIDCITY_NO_WATER */
             px_y = offset_y + tile_y - tile_terrain_idx;

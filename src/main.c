@@ -67,6 +67,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
    struct RETROTILE* city = NULL;
    MERROR_RETVAL retval = MERROR_OK;
    struct RETROFLAT_BITMAP* blocks = NULL;
+   struct RETROTILE_DATA_DS data_ds;
 
    maug_mlock( data->city_h, city );
    maug_cleanup_if_null_alloc( struct RETROTILE*, city );
@@ -96,9 +97,17 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 #else
       /* Generate terrain. */
       retval = retrotile_gen_diamond_square_iter(
-         city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
+         city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN,
+         RETROTILE_DS_FLAG_INIT_DATA, &data_ds,
          gridcity_gen_ani_cb, NULL );
       maug_cleanup_if_not_ok();
+
+      data->avg_tile = 70;
+         /* ((data_ds.highest_generated - data_ds.lowest_generated) / 2); */
+
+      debug_printf( 1,
+         "highest tile: %d, lowest tile: %d, average: %d",
+         data_ds.highest_generated, data_ds.lowest_generated, data->avg_tile );
 
       debug_printf( 1, "smoothing terrain..." );
 
@@ -108,6 +117,8 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
          gridcity_gen_ani_cb, NULL );
       maug_cleanup_if_not_ok();
 #endif /* GRIDCITY_VORONOI */
+
+      /* TODO: Set average tile based on average of *smooth* results. */
 
       /* Pick random starting plot. */
       /* gridcity_build_seed( city ); */
@@ -147,8 +158,10 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
          NULL, RETROFLAT_COLOR_GRAY, 0, 0,
          retroflat_screen_w(), retroflat_screen_h(),
          RETROFLAT_FLAGS_FILL );
+      /* TODO: Use retroflat viewport. */
       draw_city_iso(
-         city, data->view_x, data->view_y, blocks, data->blocks_sz,
+         city, data->view_x, data->view_y, data->avg_tile,
+         blocks, data->blocks_sz,
          retroflat_screen_h() >> 1 );
 
       data->dirty = 0;

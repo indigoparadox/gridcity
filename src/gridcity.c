@@ -1,12 +1,12 @@
 
 #include "gridcity.h"
 
-MERROR_RETVAL gridcity_grow( struct RETROTILE* city ) {
+MERROR_RETVAL gridcity_grow( struct RETROTILE* city, int avg_tile ) {
    int x = 0,
       y =0;
    unsigned char building_id = 0;
    MAUG_MHANDLE tiles_new_h = NULL;
-   retrotile_tile_t* tiles_new = NULL;
+   retroflat_tile_t* tiles_new = NULL;
    MERROR_RETVAL retval = MERROR_OK;
    struct RETROTILE_LAYER* layer_terrain = NULL;
    struct RETROTILE_LAYER* layer_build = NULL;
@@ -16,9 +16,9 @@ MERROR_RETVAL gridcity_grow( struct RETROTILE* city ) {
     * which to base groth calculations until we're finished.
     */
    tiles_new_h = maug_malloc(
-      sizeof( retrotile_tile_t ), city->tiles_h * city->tiles_w );
+      sizeof( retroflat_tile_t ), city->tiles_h * city->tiles_w );
    maug_mlock( tiles_new_h, tiles_new );
-   maug_cleanup_if_null_alloc( retrotile_tile_t*, tiles_new );
+   maug_cleanup_if_null_alloc( retroflat_tile_t*, tiles_new );
    maug_mzero( tiles_new, city->tiles_h * city->tiles_w );
 
    layer_terrain = retrotile_get_layer_p(
@@ -29,7 +29,7 @@ MERROR_RETVAL gridcity_grow( struct RETROTILE* city ) {
    for( y = 0 ; city->tiles_h > y ; y++ ) {
       for( x = 0 ; city->tiles_w > x ; x++ ) {
          if(
-            BLOCK_Z_WATER ==
+            avg_tile ==
             retrotile_get_tile( city, layer_terrain, x, y )
          ) {
             /* Don't grow tiles on water. */
@@ -72,7 +72,7 @@ MERROR_RETVAL gridcity_grow( struct RETROTILE* city ) {
 
    /* Copy the new buildings all at once. */
    memcpy( retrotile_get_tiles_p( layer_build ), tiles_new, 
-      city->tiles_w * city->tiles_h * sizeof( retrotile_tile_t ) );
+      city->tiles_w * city->tiles_h * sizeof( retroflat_tile_t ) );
 
 cleanup:
 
@@ -92,7 +92,7 @@ MERROR_RETVAL gridcity_dump_terrain( struct RETROTILE* city ) {
       y = 0;
    MERROR_RETVAL retval = MERROR_OK;
    struct RETROTILE_LAYER* layer_terrain = NULL;
-   retrotile_tile_t tile_idx = 0;
+   retroflat_tile_t tile_idx = 0;
 
    layer_terrain = retrotile_get_layer_p(
       city, GRIDCITY_LAYER_IDX_TERRAIN );
@@ -145,11 +145,11 @@ cleanup:
    return;
 }
 
-MERROR_RETVAL gridcity_build_seed( struct RETROTILE* city ) {
+MERROR_RETVAL gridcity_build_seed( struct RETROTILE* city, int avg_tile ) {
    int16_t gridcity_start_x = -1;
    int16_t gridcity_start_y = -1;
-   retrotile_tile_t tile_build_idx = 0;
-   retrotile_tile_t tile_terrain_idx = 0;
+   retroflat_tile_t tile_build_idx = 0;
+   retroflat_tile_t tile_terrain_idx = 0;
    MERROR_RETVAL retval = MERROR_OK;
    struct RETROTILE_LAYER* layer_build = NULL;
    struct RETROTILE_LAYER* layer_terrain = NULL;
@@ -170,7 +170,7 @@ MERROR_RETVAL gridcity_build_seed( struct RETROTILE* city ) {
       tile_terrain_idx = retrotile_get_tile( city, layer_terrain,
          gridcity_start_x, gridcity_start_y );
 
-      if( BLOCK_Z_WATER < tile_terrain_idx ) {
+      if( avg_tile < tile_terrain_idx ) {
          debug_printf( 1, "starting at %d, %d",
             gridcity_start_x, gridcity_start_y );
          retrotile_get_tile( city, layer_build,

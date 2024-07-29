@@ -19,12 +19,13 @@ struct GRIDCITY_DATA {
    int view_y;
    retroflat_ms_t next_ms;
    uint8_t dirty;
+   int avg_tile;
 };
 
-MERROR_RETVAL gridcity_grow( struct RETROTILE* city );
+MERROR_RETVAL gridcity_grow( struct RETROTILE* city, int avg_tile );
 MERROR_RETVAL gridcity_dump_terrain( struct RETROTILE* city );
 void gridcity_free_blocks( struct GRIDCITY_DATA* data );
-MERROR_RETVAL gridcity_build_seed( struct RETROTILE* city );
+MERROR_RETVAL gridcity_build_seed( struct RETROTILE* city, int avg_tile );
 
 #define gridcity_idx( x, y, w ) (((y) * (w)) + (x))
 
