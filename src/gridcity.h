@@ -3,6 +3,7 @@
 #define GRIDCITY_H
 
 #include <maug.h>
+#include <retrofnt.h>
 #include <retrotil.h>
 
 #include "blocks.h"
@@ -20,6 +21,7 @@ struct GRIDCITY_DATA {
    retroflat_ms_t next_ms;
    uint8_t dirty;
    int avg_tile;
+   MAUG_MHANDLE font_h;
 };
 
 MERROR_RETVAL gridcity_grow( struct RETROTILE* city, int avg_tile );

@@ -22,6 +22,7 @@ MERROR_RETVAL gridcity_gen_ani_cb( void* animation_cb_data, int16_t iter ) {
    MERROR_RETVAL retval = MERROR_OK;
    struct RETROFLAT_INPUT input_evt;
    RETROFLAT_IN_KEY input = 0;
+   struct GRIDCITY_DATA* data = (struct GRIDCITY_DATA*)animation_cb_data;
 
    /* Check for cancel. */
 
@@ -48,8 +49,8 @@ MERROR_RETVAL gridcity_gen_ani_cb( void* animation_cb_data, int16_t iter ) {
    maug_snprintf( gen_str, 30, "Generating Terrain (%d)%s",
       iter, c_gen_strings[gen_iter] );
 
-   retroflat_string(
-      NULL, RETROFLAT_COLOR_RED, gen_str, 0, NULL, 10, 10, 0 );
+   retrofont_string(
+      NULL, RETROFLAT_COLOR_RED, gen_str, 0, data->font_h, 10, 10, 0, 0, 0 );
 
    retroflat_draw_release( NULL );
 
@@ -92,16 +93,16 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
 #ifdef GRIDCITY_VORONOI
       retval = retrotile_gen_voronoi_iter(
          city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
-         gridcity_gen_ani_cb, NULL );
+         gridcity_gen_ani_cb, data );
       maug_cleanup_if_not_ok();
 #else
       /* Generate terrain. */
       retval = retrotile_gen_diamond_square_iter(
          city, 0, BLOCK_MAX_Z, 5, GRIDCITY_LAYER_IDX_TERRAIN,
          RETROTILE_DS_FLAG_INIT_DATA, &data_ds,
-         gridcity_gen_ani_cb, NULL );
+         gridcity_gen_ani_cb, data );
       maug_cleanup_if_not_ok();
-
+ 
       data->avg_tile = 70;
          /* ((data_ds.highest_generated - data_ds.lowest_generated) / 2); */
 
@@ -114,7 +115,7 @@ void gridcity_loop( struct GRIDCITY_DATA* data ) {
       /* Smooth terrain. */
       retval = retrotile_gen_smooth_iter(
          city, 0, 0, 0, GRIDCITY_LAYER_IDX_TERRAIN, 0, NULL,
-         gridcity_gen_ani_cb, NULL );
+         gridcity_gen_ani_cb, data );
       maug_cleanup_if_not_ok();
 #endif /* GRIDCITY_VORONOI */
 
@@ -211,10 +212,13 @@ int main( int argc, char* argv[] ) {
 
    /* === Allocation and Loading === */
 
-   retval = retrotile_alloc( &(data.city_h), 20, 20, 2 );
+   retval = retrotile_alloc( &(data.city_h), 20, 20, 2, "" );
    maug_cleanup_if_not_ok();
    
    retval = draw_init_blocks( &(data.blocks_h), &(data.blocks_sz) );
+   maug_cleanup_if_not_ok();
+
+   retval = retrofont_load( "unscii-8.hex", &(data.font_h), 8, 33, 93 );
    maug_cleanup_if_not_ok();
 
    /* === Main Loop === */
@@ -226,6 +230,8 @@ int main( int argc, char* argv[] ) {
 cleanup:
 
 #ifndef RETROFLAT_OS_WASM
+
+   maug_mfree( data.font_h );
 
    maug_mfree( data.city_h );
 
