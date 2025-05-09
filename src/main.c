@@ -212,7 +212,7 @@ int main( int argc, char* argv[] ) {
 
    /* === Allocation and Loading === */
 
-   retval = retrotile_alloc( &(data.city_h), 20, 20, 2, "" );
+   retval = retrotile_alloc( &(data.city_h), 20, 20, 2, "", "" );
    maug_cleanup_if_not_ok();
    
    retval = draw_init_blocks( &(data.blocks_h), &(data.blocks_sz) );
