@@ -5,7 +5,7 @@ MERROR_RETVAL gridcity_grow( struct RETROTILE* city, int avg_tile ) {
    int x = 0,
       y =0;
    unsigned char building_id = 0;
-   MAUG_MHANDLE tiles_new_h = NULL;
+   MAUG_MHANDLE tiles_new_h = (MAUG_MHANDLE)NULL;
    retroflat_tile_t* tiles_new = NULL;
    MERROR_RETVAL retval = MERROR_OK;
    struct RETROTILE_LAYER* layer_terrain = NULL;
@@ -80,7 +80,7 @@ cleanup:
       maug_munlock( tiles_new_h, tiles_new );
    }
 
-   if( NULL != tiles_new_h ) {
+   if( (MAUG_MHANDLE)NULL != tiles_new_h ) {
       maug_mfree( tiles_new_h );
    }
 
@@ -124,7 +124,7 @@ void gridcity_free_blocks( struct GRIDCITY_DATA* data ) {
    struct RETROFLAT_BITMAP* blocks;
    size_t i = 0;
 
-   if( NULL == data->blocks_h ) {
+   if( (MAUG_MHANDLE)NULL == data->blocks_h ) {
       goto cleanup;
    }
    maug_mlock( data->blocks_h, blocks );

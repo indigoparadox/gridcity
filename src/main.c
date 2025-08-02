@@ -218,7 +218,7 @@ int main( int argc, char* argv[] ) {
    retval = draw_init_blocks( &(data.blocks_h), &(data.blocks_sz) );
    maug_cleanup_if_not_ok();
 
-   retval = retrofont_load( "unscii-8.hex", &(data.font_h), 8, 33, 93 );
+   retval = retrofont_load( "unscii_8.hex", &(data.font_h), 8, 33, 93 );
    maug_cleanup_if_not_ok();
 
    /* === Main Loop === */
