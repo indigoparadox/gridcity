@@ -16,7 +16,7 @@ include maug/Makefile.inc
 
 .PHONY: clean
 
-all: grdcty.ale grdcty.sdl grdctyw.exe grdctyd.exe grdctynt.exe grdcty.html grdctyw3.exe
+all: grdcty.$(shell uname -m).ale grdcty.$(shell uname -m).sdl grdctyw.exe grdctyd.exe grdctynt.exe grdcty.html grdctyw3.exe
 
 $(eval $(call RETROXPM,$(wildcard blocks/*.bmp)))
 
