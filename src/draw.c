@@ -37,8 +37,8 @@ MERROR_RETVAL draw_init_blocks(
 
    /* Allocate and load blocks. */
    *p_blocks_sz = BLOCK_MAX;
-   *p_blocks_h =
-      maug_malloc( sizeof( struct RETROFLAT_BITMAP ), *p_blocks_sz );
+   maug_malloc_test(
+      *p_blocks_h, sizeof( struct RETROFLAT_BITMAP ), *p_blocks_sz );
    maug_cleanup_if_null_alloc( MAUG_MHANDLE, *p_blocks_h );
 
    maug_mlock( *p_blocks_h, blocks );

@@ -15,9 +15,8 @@ MERROR_RETVAL gridcity_grow( struct RETROTILE* city, int avg_tile ) {
     * so we can maintain a complete atomic image of the old buildings on
     * which to base groth calculations until we're finished.
     */
-   tiles_new_h = maug_malloc(
-      sizeof( retroflat_tile_t ), city->tiles_h * city->tiles_w );
-   maug_mlock( tiles_new_h, tiles_new );
+   maug_malloc_test(
+      tiles_new_h, sizeof( retroflat_tile_t ), city->tiles_h * city->tiles_w );
    maug_cleanup_if_null_alloc( retroflat_tile_t*, tiles_new );
    maug_mzero( tiles_new, city->tiles_h * city->tiles_w );
 
